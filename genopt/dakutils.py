@@ -6,6 +6,7 @@
 * extract data from output files
 
 Tong Zhang <zhangt@frib.msu.edu>
+
 2016-10-17 09:19:25 AM EDT
 """
 
@@ -36,10 +37,7 @@ class DakotaInput(object):
                                  'variables',
                                  'interface',
                                  'responses', )
-        self.environment = [
-                "tabular_data",
-                "  tabular_data_file 'dakota.dat'"
-        ]
+        self.environment = ["tabular_data", "  tabular_data_file 'dakota.dat'"]
 
         self.method = [
             "multidim_parameter_study",
@@ -137,6 +135,7 @@ class DakotaParam(object):
     :param lower: lower bound, -1.0e10 by default
     :param upper: upper bound, 1.0e10 by default
     """
+
     def __init__(self, label, initial=0.0, lower=-1.0e10, upper=1.0e10):
         self._label = "'{label}'".format(label=label)
         self._initial = initial
@@ -174,10 +173,14 @@ class DakotaParam(object):
     @upper.setter
     def upper(self, x):
         self._upper = x
-        
+
     def __repr__(self):
         return "Parameter {label:>3s}: initial value is {initial:>.3g}, limit range is [{lower:>.3g}:{upper:>.3g}]".format(
-                label=self._label, initial=self._initial, lower=self._lower, upper=self._upper)
+            label=self._label,
+            initial=self._initial,
+            lower=self._lower,
+            upper=self._upper)
+
 
 def get_opt_results(outfile='dakota.out', rtype='dict'):
     """ extract optimized results from dakota output
@@ -236,6 +239,7 @@ def random_string(length=8):
     """ generate random string with given length
 
     :param length: string length, 8 by default
+    :return: random strings with defined length
     """
     return ''.join(
         [random.choice(string.letters + string.digits) for _ in range(length)])
@@ -294,7 +298,6 @@ def test_dakotaparam():
     print ' '.join(["{0:>14e}".format(p.initial) for p in plist])
     print ' '.join(["{0:>14e}".format(p.lower) for p in plist])
     print ' '.join(["{0:>14e}".format(p.upper) for p in plist])
-
 
 
 if __name__ == '__main__':

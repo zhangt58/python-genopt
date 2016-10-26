@@ -5,6 +5,7 @@
 * orbit correction: ``DakotaOC``
 
 Tong Zhang <zhangt@frib.msu.edu>
+
 2016-10-23 14:26:13 PM EDT
 """
 
@@ -25,6 +26,7 @@ class DakotaBase(object):
     """ Base class for general optimization, initialized parameters:
 
     """
+
     def __init__(self, **kws):
         self._dakexec = 'dakota'
         self._dakout = 'dakota.out'
@@ -36,6 +38,7 @@ class DakotaBase(object):
     @dakexec.setter
     def dakexec(self, dakexec):
         self._dakexec = dakexec
+
 
 class DakotaOC(DakotaBase):
     """ Dakota optimization class with orbit correction driver
@@ -49,8 +52,9 @@ class DakotaOC(DakotaBase):
     :param optdriver: analysis driver for optimization, 'flamedriver' by default
     :param workdir: directory that dakota input/output files should be in
     :param kws: keywords parameters for additional usage, defined in ``DakotaBase`` class
-        valid keys:
-        * dakexec: full path of dakota executable
+                valid keys:
+                
+                    * dakexec: full path of dakota executable
     """
 
     def __init__(self,
@@ -88,8 +92,9 @@ class DakotaOC(DakotaBase):
             self._opt_driver = 'flamedriver'
 
         if workdir is None:
-            self._workdir = os.path.join('/tmp', 'dakota_'+dakutils.random_string(6))
-        
+            self._workdir = os.path.join('/tmp',
+                                         'dakota_' + dakutils.random_string(6))
+
         if kws.get('dakexec') is not None:
             self._dakexec = kws.get('dakexec')
 
@@ -282,19 +287,22 @@ class DakotaOC(DakotaBase):
         :param debug: if True, generate a simple test input file
         """
         if not debug:
-            bpms = "'" + ' '.join(['{0}'.format(i) for i in self._elem_bpm]) + "'"
-            hcors = "'" + ' '.join(['{0}'.format(i) for i in self._elem_hcor]) + "'"
-            vcors = "'" + ' '.join(['{0}'.format(i) for i in self._elem_vcor]) + "'"
+            bpms = "'" + ' '.join(
+                ['{0}'.format(i) for i in self._elem_bpm]) + "'"
+            hcors = "'" + ' '.join(
+                ['{0}'.format(i) for i in self._elem_hcor]) + "'"
+            vcors = "'" + ' '.join(
+                ['{0}'.format(i) for i in self._elem_vcor]) + "'"
 
             oc_interface = []
             oc_interface.append('fork')
-            oc_interface.append('analysis_driver = "{driver} {latfile} {bpms} {hcors} {vcors}"'.format(
-                driver=self.optdriver,
-                latfile=self.latfile,
-                bpms=bpms,
-                hcors=hcors,
-                vcors=vcors,
-                ))
+            oc_interface.append(
+                'analysis_driver = "{driver} {latfile} {bpms} {hcors} {vcors}"'.format(
+                    driver=self.optdriver,
+                    latfile=self.latfile,
+                    bpms=bpms,
+                    hcors=hcors,
+                    vcors=vcors, ))
             oc_interface.append('deactivate = active_set_vector')
 
             dakinp = dakutils.DakotaInput()
@@ -304,14 +312,14 @@ class DakotaOC(DakotaBase):
         else:  # debug is True
             dakinp = dakutils.DakotaInput()
 
-        if not os.path.isdir(self._workdir): 
+        if not os.path.isdir(self._workdir):
             os.mkdir(self._workdir)
         inputfile = os.path.join(self._workdir, infile)
         outputfile = inputfile.replace('.in', '.out')
         self._dakin = inputfile
         self._dakout = outputfile
         dakinp.write(inputfile)
-    
+
     def set_variables(self, plist=None, initial=1e-4, lower=-0.01, upper=0.01):
         """ setup variables block, that is setup ``oc_variables``
         should be ready to invoke after ``set_cors()``
@@ -327,19 +335,25 @@ class DakotaOC(DakotaBase):
                 print("No corrector is selected, set_cors() first.")
                 sys.exit(1)
             else:
-                x_len = len(self._elem_hcor) if self._elem_hcor is not None else 0
-                y_len = len(self._elem_vcor) if self._elem_vcor is not None else 0
+                x_len = len(
+                    self._elem_hcor) if self._elem_hcor is not None else 0
+                y_len = len(
+                    self._elem_vcor) if self._elem_vcor is not None else 0
                 n = x_len + y_len
                 oc_variables = []
                 oc_variables.append('continuous_design = {0}'.format(n))
-                oc_variables.append('  initial_point' + "{0:>14e}".format(initial) * n)
-                oc_variables.append('  lower_bounds ' + "{0:>14e}".format(lower) * n)
-                oc_variables.append('  upper_bounds ' + "{0:>14e}".format(upper) * n)
+                oc_variables.append('  initial_point' + "{0:>14e}".format(
+                    initial) * n)
+                oc_variables.append('  lower_bounds ' + "{0:>14e}".format(
+                    lower) * n)
+                oc_variables.append('  upper_bounds ' + "{0:>14e}".format(
+                    upper) * n)
                 xlbls = ["'x{0:03d}'".format(i) for i in range(1, x_len + 1)]
                 ylbls = ["'y{0:03d}'".format(i) for i in range(1, y_len + 1)]
-                oc_variables.append('  descriptors  ' + ''.join(["{0:>14s}".format(lbl) for lbl in xlbls + ylbls]))
+                oc_variables.append('  descriptors  ' + ''.join(
+                    ["{0:>14s}".format(lbl) for lbl in xlbls + ylbls]))
                 self._oc_variables = oc_variables
-            
+
     def run(self, mpi=False, np=None):
         """ run optimization
 
@@ -351,12 +365,15 @@ class DakotaOC(DakotaBase):
             if np is None or int(np) > max_core_num:
                 np = max_core_num
             run_command = "mpirun -np {np} {dakexec} -i {dakin} -o {dakout}".format(
-                    np=np, dakexec=self._dakexec, dakin=self._dakin, dakout=self._dakout
-                    )
+                np=np,
+                dakexec=self._dakexec,
+                dakin=self._dakin,
+                dakout=self._dakout)
         else:  # mpi is False
             run_command = "{dakexec} -i {dakin} -o {dakout}".format(
-                    dakexec=self._dakexec, dakin=self._dakin, dakout=self._dakout
-                    )
+                dakexec=self._dakexec,
+                dakin=self._dakin,
+                dakout=self._dakout)
         subprocess.call(run_command.split())
 
     def get_opt_results(self, outfile=None, rtype='dict'):
@@ -383,8 +400,8 @@ class DakotaOC(DakotaBase):
             return dakutils.get_opt_results(outfile=self._dakout, rtype=rtype)
         else:
             return dakutils.get_opt_results(outfile=outfile, rtype=rtype)
-            
-    def plot(self, outfile=None, figsize=(10,8), dpi=120, **kws):
+
+    def plot(self, outfile=None, figsize=(10, 8), dpi=120, **kws):
         """ show orbit
 
         :param outfile: output file of dakota
@@ -426,25 +443,29 @@ class DakotaOC(DakotaBase):
             val = val
 
         m = self._machine
-        val_x = [v for (k,v) in sorted(val.items()) if k.startswith('x')]
-        val_y = [v for (k,v) in sorted(val.items()) if k.startswith('y')]
-        [m.reconfigure(eid,{'theta_x': eval}) for (eid, eval) in zip(idx_x, val_x)]
-        [m.reconfigure(eid,{'theta_y': eval}) for (eid, eval) in zip(idx_y, val_y)]
+        val_x = [v for (k, v) in sorted(val.items()) if k.startswith('x')]
+        val_y = [v for (k, v) in sorted(val.items()) if k.startswith('y')]
+        [m.reconfigure(eid, {'theta_x': eval})
+         for (eid, eval) in zip(idx_x, val_x)]
+        [m.reconfigure(eid, {'theta_y': eval})
+         for (eid, eval) in zip(idx_y, val_y)]
         s = m.allocState({})
         r = m.propagate(s, 0, len(m), observe=range(len(m)))
         zpos = np.array([r[i][1].pos for i in self._elem_bpm])
-        x, y = np.array([[r[i][1].moment0_env[j] for i in self._elem_bpm] for j in [0,2]])
+        x, y = np.array(
+            [[r[i][1].moment0_env[j] for i in self._elem_bpm] for j in [0, 2]])
 
         if outfile is not None:
-            np.savetxt(outfile, np.vstack((zpos, x, y)).T, 
-                    fmt="%22.14e", 
-                    comments='# orbit data saved at ' + time.ctime() + '\n',
-                    header="#{0:^22s} {1:^22s} {2:^22s}".format(
-                        "zpos [m]", "x [mm]", "y [mm]"), 
-                    delimiter=' ')
+            np.savetxt(outfile,
+                       np.vstack((zpos, x, y)).T,
+                       fmt="%22.14e",
+                       comments='# orbit data saved at ' + time.ctime() + '\n',
+                       header="#{0:^22s} {1:^22s} {2:^22s}".format(
+                           "zpos [m]", "x [mm]", "y [mm]"),
+                       delimiter=' ')
 
         return zpos, x, y
-        
+
 
 def test_dakotaoc1():
     latfile = 'test/test.lat'
@@ -453,6 +474,7 @@ def test_dakotaoc1():
     #oc_ins.run(mpi=True, np=2)
     oc_ins.run()
     print oc_ins.get_opt_results()
+
 
 def test_dakotaoc2():
     latfile = 'test_392.lat'
@@ -470,10 +492,10 @@ def test_dakotaoc2():
     #print oc_ins.get_all_cors(type='v')
     oc_ins.set_bpms(bpm=bpms)
     oc_ins.set_cors(cor=cors)
-    
+
     # set parameters
     oc_ins.set_variables()
-    
+
     oc_ins.gen_dakota_input()
     oc_ins.run(mpi=True, np=4)
     #oc_ins.run()
