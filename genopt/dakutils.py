@@ -97,13 +97,13 @@ class DakotaInput(object):
         entry_interface = []
         entry_interface.append('fork')
         entry_interface.append('analysis_driver = "{driver} {argv}"'.format(
-            driver='flamedriver',
+            driver='flamedriver_oc',
             argv='/home/tong1/work/FRIB/projects/flame_github/optdrivers/oc/test_392.lat'))
         entry_interface.append('deactivate = active_set_vector')
 
         entry_method = []
         entry_method.append('conmin_frcg')
-        entry_method.append('  max_iterations=100')
+        entry_method.append('  max_iterations=30')
         entry_method.append('  convergence_tolerance=1e-4')
 
         entry_variables = []
@@ -125,12 +125,14 @@ class DakotaInput(object):
         self.method = entry_method
         self.variables = entry_variables
         self.responses = entry_responses
-
+                
 
 class DakotaParam(object):
     """ create dakota variable for ``variables`` block
 
-    :param label: string to represent itself, e.g. 'x1'
+    :param label: string to represent itself, e.g. 'x001',
+                  it is recommended to annotate the number with the format of "%03d",
+                  i.e. 1 --> 001, 10 --> 010, 100 --> 100
     :param initial: initial value, 0.0 by default
     :param lower: lower bound, -1.0e10 by default
     :param upper: upper bound, 1.0e10 by default
@@ -180,6 +182,490 @@ class DakotaParam(object):
             initial=self._initial,
             lower=self._lower,
             upper=self._upper)
+
+
+class DakotaInterface(object):
+    """ create dakota interface for ``interface`` block
+
+    :param mode: 'fork' or 'direct' (future usage)
+    :param driver: analysis driver, external ('fork') executable file
+                   internal ('direct') executable file
+    :param latfile: file name of (flame) lattice file
+    :param bpms: array of selected BPMs' id
+    :param hcors: array of selected horizontal (x) correctors' id
+    :param vcors: array of selected vertical (y) correctors' id
+    :param ref_x0: array of BPM readings for reference orbit in x, if not defined, use 0s
+    :param ref_y0: array of BPM readings for reference orbit in y, if not defined, use 0s
+    :param ref_flag: string flag for objective functions:
+                     "x": sum of dx^2, dx = x-x0;
+                     "y": sum of dy^2, dy = y-y0;
+                     "xy": sum of dx^2 and dy^2;
+    :param kws: keyword parameters, valid keys: 
+        e.g.:
+        * deactivate, possible value: 'active_set_vector'
+
+    .. note:: ``mode`` should be set to be 'direct' when the analysis drivers are
+        built with dakota library, presently, 'fork' is used.
+
+    :Example:
+    
+    >>> # for orbit correction
+    >>> bpms = [1,2,3] # just for demonstration
+    >>> hcors, vcors = [1,3,5], [2,4,6]
+    >>> latfile = 'test.lat'
+    >>> oc_interface = DakotaInterface(mode='fork', 
+    >>>                                driver='flamedriver_oc',
+    >>>                                latfile=latfile
+    >>>                                bpms=bpms, hcors=hcors, vcors=vcors,
+    >>>                                ref_x0=None, ref_y0=None,
+    >>>                                ref_flag=None,
+    >>>                                deactivate='active_set_vector')
+    >>> # add extra configurations
+    >>> oc_interface.set_extra(p1='v1', p2='v2')
+    >>> # get configuration
+    >>> config_str = oc_interface.get_config()
+    >>>
+    """
+    def __init__(self, mode='fork', driver='flamedriver_oc', latfile=None,
+                 bpms=None, hcors=None, vcors=None, ref_x0=None, ref_y0=None, ref_flag=None, **kws):
+        self._mode, self._driver = mode, driver
+        self._latfile = latfile
+        self._bpms = bpms
+        self._hcors, self._vcors = hcors, vcors
+        self._ref_x0 = [0]*len(bpms) if ref_x0 is None else ref_x0
+        self._ref_y0 = [0]*len(bpms) if ref_y0 is None else ref_y0
+        self._ref_flag = "xy" if ref_flag is None else ref_flag
+        self._kws = kws
+        for k in kws:
+            setattr(self, k, kws.get(k))
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, mode):
+        self._mode = mode
+        
+    @property
+    def driver(self):
+        return self._driver
+
+    @driver.setter
+    def driver(self, driver):
+        self._driver = driver
+
+    @property
+    def latfile(self):
+        return self._latfile
+
+    @latfile.setter
+    def latfile(self, fn):
+        self._latfile = fn
+
+    @property
+    def bpms(self):
+        return self._bpms
+
+    @bpms.setter
+    def bpms(self, nlist):
+        self._bpms = nlist
+
+    @property
+    def hcors(self):
+        return self._hcors
+
+    @hcors.setter
+    def hcors(self, nlist):
+        self._hcors = nlist
+
+    @property
+    def vcors(self):
+        return self._vcors
+
+    @vcors.setter
+    def vcors(self, nlist):
+        self._vcors = nlist
+
+    @property
+    def ref_x0(self):
+        return self._ref_x0
+
+    @ref_x0.setter
+    def ref_x0(self, vlist):
+        self._ref_x0 = vlist
+
+    @property
+    def ref_y0(self):
+        return self._ref_y0
+
+    @ref_y0.setter
+    def ref_y0(self, vlist):
+        self._ref_y0 = vlist
+
+    @property
+    def ref_flag(self):
+        return self._ref_flag
+
+    @ref_flag.setter
+    def ref_flag(self, s):
+        self._ref_flag = s
+
+    def set_extra(self, **kws):
+        """ add extra configurations
+        """
+        self._kws.update(kws)
+
+    def __repr__(self):
+        s = "Configurations: \n"
+        for k,v in self.__dict__.items():
+            s += "{0:<10s} ==> {1:<10s}\n".format(str(k), str(v))
+        return s
+
+    def get_config(self, rtype='list'):
+        """ get interface configuration for dakota input block
+
+        :param rtype: 'list' or 'string'
+        :return: dakota interface input
+        """
+        bpms = "'" + ' '.join(
+            ['{0}'.format(i) for i in self._bpms]) + "'"
+        hcors = "'" + ' '.join(
+            ['{0}'.format(i) for i in self._hcors]) + "'"
+        vcors = "'" + ' '.join(
+            ['{0}'.format(i) for i in self._vcors]) + "'"
+        ref_x0 = "'" + ' '.join(
+            ['{0}'.format(i) for i in self._ref_x0]) + "'"
+        ref_y0 = "'" + ' '.join(
+            ['{0}'.format(i) for i in self._ref_y0]) + "'"
+
+        oc_interface = []
+        oc_interface.append(self._mode)
+        oc_interface.append(
+            'analysis_driver = "{driver} {latfile} {bpms} {hcors} {vcors} {ref_x0} {ref_y0} {ref_flag}"'.format(
+                driver=self._driver,
+                latfile=self._latfile,
+                bpms=bpms,
+                hcors=hcors,
+                vcors=vcors, 
+                ref_x0=ref_x0,
+                ref_y0=ref_y0,
+                ref_flag=self._ref_flag,
+                ))
+        for k,v in self._kws.items():
+            oc_interface.append('{0} = {1}'.format(str(k), str(v)))
+        if rtype == 'string':
+            return '\n'.join(oc_interface)
+        else: # list
+            return oc_interface
+
+
+class DakotaModel(object):
+    """ create dakota model for ``model`` block
+    """
+    def __init__(self, **kws):
+        self._model = 'single'
+        self._kws = kws
+
+    def __repr__(self):
+        s = "Configurations: \n"
+        for k,v in self.__dict__.items():
+            s += "{0:<10s} ==> {1:<10s}\n".format(str(k), str(v))
+        return s
+
+    def get_config(self, rtype='list'):
+        """ get model configuration for dakota input block
+
+        :param rtype: 'list' or 'string'
+        :return: dakota model input
+        """
+        oc_model = []
+        oc_model.append(self._model)
+        for k,v in self._kws.items():
+            oc_model.append('{0} = {1}'.format(str(k), str(v)))
+        if rtype == 'string':
+            return '\n'.join(oc_model)
+        else: # list
+            return oc_model
+
+
+class DakotaResponses(object):
+    """ create dakota responses for ``responses`` block
+
+    :param nfunc: num of objective functions
+    :param gradient: gradient type: 'analytic' or 'numerical'
+    :param hessian: hessian configuration
+    :param kws: keyword parameters for gradients and hessians
+        valid keys: any available for responses
+        among which key name of 'grad' is for gradients configuration, 
+        the value should be a dict
+
+    :Example:
+
+    >>> # default responses:
+    >>> response = DakotaResponses()
+    >>> print response.get_config()
+    ['num_objective_functions = 1', 'no_gradients', 'no_hessians']
+    >>> 
+    >>> # responses with analytic gradients:
+    >>> response = DakotaResponses(gradient='analytic')
+    >>> print response.get_config()
+    ['num_objective_functions = 1', 'analytic_gradients', 'no_hessians']
+    >>> 
+    >>> # responses with numerical gradients, default configuration:
+    >>> oc_responses = DakotaResponses(gradient='numerical')
+    >>> print oc_responses.get_config()
+    ['num_objective_functions = 1', 'numerical_gradients', ' method_source dakota', 
+     ' interval_type forward', ' fd_gradient_step_size 1e-06', 'no_hessians']
+    >>>
+    >>> # responses with numerical gradients, define step:
+    >>> oc_responses = DakotaResponses(gradient='numerical', step=2.0e-7)
+    >>> print oc_responses.get_config()
+    ['num_objective_functions = 1', 'numerical_gradients', ' method_source dakota', 
+     ' interval_type forward', ' fd_gradient_step_size 2e-07', 'no_hessians']
+    >>> 
+    >>> # given other keyword parameters:
+    >>> oc_responses = DakotaResponses(gradient='numerical', step=2.0e-7, k1='v1', k2='v2')
+    >>> print oc_responses.get_config()
+    ['num_objective_functions = 1', 'numerical_gradients', ' method_source dakota', 
+     ' interval_type forward', ' fd_gradient_step_size 2e-07', 'no_hessians', 'k2 = v2', 'k1 = v1']
+    >>>
+    """
+    def __init__(self, nfunc=1, gradient=None, hessian=None, **kws):
+        self._nfunc = nfunc
+        self._gradients = 'no_gradients' if gradient is None else gradient
+        self._hessians = 'no_hessians' if hessian is None else hessian
+        self._kws = kws
+
+    def gradients(self, type=None, step=1.0e-6, **kws):
+        """ generate gradients configuration
+
+        :param type: 'numerical' or 'analytic' (default)
+        :param step: gradient step size, only valid when type is numerical
+        :param kws: other keyword parameters
+        :return: list of configuration
+        """
+        # replace with keyword parameter 
+
+        g = {}
+        g['config'] = {}
+        if type is None or type == 'analytic':  # type: analytic
+            g['type'] = 'analytic_gradients'
+        else: # type: numerical
+            g['type'] = 'numerical_gradients'
+            g['config']['method_source'] = 'dakota'
+            g['config']['interval_type'] = 'forward'
+            g['config']['fd_gradient_step_size'] = step
+
+        g_config = [' {0} {1}'.format(k,v) for k,v in g['config'].items()]
+
+        retval = []
+        retval.append('{0}'.format(g['type']))
+        for i in g_config:
+            retval.append(i)
+
+        for k,v in kws.items():
+            retval.append('{0} {1}'.format(k,v))
+
+        return retval
+
+    def __repr__(self):
+        s = "Configurations: \n"
+        for k,v in self.__dict__.items():
+            s += "{0:<10s} ==> {1:<10s}\n".format(str(k), str(v))
+        return s
+
+    def get_config(self, rtype='list'):
+        """ get responses configuration for dakota input block
+
+        :param rtype: 'list' or 'string'
+        :return: dakota responses input
+        """
+        oc_responses = []
+        oc_responses.append('num_objective_functions = {0}'.format(self._nfunc))
+        if self._gradients == 'no_gradients':
+            oc_responses.append('no_gradients')
+        else:
+            step = 1e-6 if self._kws.get('step') is None else self._kws.pop('step')
+            grad_dict = self._kws.get('grad') if self._kws.get('grad') is not None else {}
+            gradients = self.gradients(type=self._gradients, step=step, **grad_dict)
+            oc_responses.extend(gradients)
+
+        if self._hessians == 'no_hessians':
+            oc_responses.append('no_hessians')
+        else:
+            pass
+
+        for k,v in self._kws.items():
+            oc_responses.append('{0} = {1}'.format(str(k), str(v)))
+        if rtype == 'string':
+            return '\n'.join(oc_responses)
+        else: # list
+            return oc_responses
+
+
+class DakotaMethod(object):
+    """ create dakota method for ``method`` block
+
+    :param method: method name, 'cg' by default, all possible choices: 'cg', 'ps'
+    :param iternum: max iteration number, 20 by default
+    :param tolerance: convergence tolerance, 1e-4 by default
+    :param kws: other keyword parameters
+
+    :Example:
+
+    >>> # default
+    >>> oc_method = DakotaMethod()
+    >>> print oc_method.get_config()
+    ['conmin_frcg', ' convergence_tolerance 0.0001', ' max_iterations 20']
+    >>> # define method with pattern search
+    >>> oc_method = DakotaMethod(method='ps')
+    >>> print oc_method.get_config()
+    ['coliny_pattern_search', ' contraction_factor 0.75', ' max_function_evaluations 500', 
+     ' solution_accuracy 0.0001', ' exploratory_moves basic_pattern', 
+     ' threshold_delta 0.0001', ' initial_delta 0.5', ' max_iterations 100']
+    >>> # modify options of pattern search method
+    >>> oc_method = DakotaMethod(method='ps', max_iterations=200, contraction_factor=0.8)
+    >>> print oc_method.get_config()
+    ['coliny_pattern_search', ' contraction_factor 0.8', ' max_function_evaluations 500', 
+     ' solution_accuracy 0.0001', ' exploratory_moves basic_pattern', 
+     ' threshold_delta 0.0001', ' initial_delta 0.5', ' max_iterations 200']
+    >>> # conmin_frcg method
+    >>> oc_method = DakotaMethod(method='cg')
+    >>> print oc_method.get_config()
+    ['conmin_frcg', ' convergence_tolerance 0.0001', ' max_iterations 20']
+    >>> # modify options
+    >>> oc_method = DakotaMethod(method='cg', max_iterations=100)
+    >>> print oc_method.get_config()
+    ['conmin_frcg', ' convergence_tolerance 0.0001', ' max_iterations 100']
+    >>>
+    """
+    def __init__(self, method='cg', iternum=20, tolerance=1e-4, **kws):
+        self._method = method
+        self._iternum = iternum
+        self._tol = tolerance
+        self._kws = {k:v for k,v in kws.items()}
+
+        ps_k = ['solution_accuracy', 'initial_delta', 'threshold_delta', 
+                'exploratory_moves', 'contraction_factor', 'max_iterations', 
+                'max_function_evaluations']
+        ps_v = [1e-4, 0.5, 1e-4, 'basic_pattern', 0.75, 100, 500]
+        self._ps_d = dict(zip(ps_k, ps_v))
+
+        cg_k = ['max_iterations', 'convergence_tolerance']
+        cg_v = [iternum, tolerance]
+        self._cg_d = dict(zip(cg_k, cg_v))
+
+        if method == 'cg':
+            self._cg_d.update(kws)
+            [self._kws.pop(k) for k in kws if k in cg_k]
+        elif method == 'ps':
+            self._ps_d.update(kws)
+            [self._kws.pop(k) for k in kws if k in ps_k]
+
+
+    def get_default_method(self, method):
+        """ get default configuration of some method
+
+        :param method: method name, 'cg' or 'ps'
+        :return: dict of configuration
+        """
+        if method == 'cg':
+            for k,v in self._cg_d.items():
+                return "{k:<10s}:{v:<10s}".format(str(k),str(v))
+        elif method == 'ps':
+            for k,v in self._ps_d.items():
+                return "{k:<10s}:{v:<10s}".format(str(k),str(v))
+
+    def method(self, method):
+        """ return method configuration
+        
+        :param method: method stirng name, 'cg' or 'ps'
+        :return: list of method configuration
+        """
+        mdict = {}
+        mdict['config'] = {}
+        if method == 'cg':
+            mdict['type'] = 'conmin_frcg'
+            mdict['config'] = self._cg_d
+        elif method == 'ps':
+            mdict['type'] = 'coliny_pattern_search'
+            mdict['config'] = self._ps_d
+        
+        retval = []
+        retval.append('{0}'.format(mdict['type']))
+        retval.extend([' {0} {1}'.format(k,v) for k,v in mdict['config'].items()])
+
+        return retval
+
+
+    def __repr__(self):
+        s = "Configurations: \n"
+        for k,v in self.__dict__.items():
+            s += "{0:<10s} ==> {1:<10s}\n".format(str(k), str(v))
+        return s
+
+    def get_config(self, rtype='list'):
+        """ get method configuration for dakota input block
+
+        :param rtype: 'list' or 'string'
+        :return: dakota method input
+        """
+        oc_method = self.method(self._method)
+
+        for k,v in self._kws.items():
+            oc_method.append('{0} = {1}'.format(str(k), str(v)))
+        if rtype == 'string':
+            return '\n'.join(oc_method)
+        else: # list
+            return oc_method
+
+
+class DakotaEnviron(object):
+    """ create datako environment for ``environment`` block
+
+    :param tabfile: tabular file name, by default not save tabular data
+    :param kws: other keyword parameters
+
+    :Example:
+
+    >>> # default
+    >>> oc_environ = DakotaEnviron()
+    >>> print oc_environ.get_config()
+    []
+    >>> # define name of tabular file
+    >>> oc_environ = DakotaEnviron(tabfile='tmp.dat')
+    >>> print oc_environ.get_config()
+    ['tabular_data', " tabular_data_file 'tmp.dat'"]
+    >>>
+    """
+    def __init__(self, tabfile=None, **kws):
+        self._tabfile = tabfile
+        self._kws = kws
+    
+    def __repr__(self):
+        s = "Configurations: \n"
+        for k,v in self.__dict__.items():
+            s += "{0:<10s} ==> {1:<10s}\n".format(str(k), str(v))
+        return s
+
+    def get_config(self, rtype='list'):
+        """ get responses configuration for dakota input block
+
+        :param rtype: 'list' or 'string'
+        :return: dakota responses input
+        """
+        oc_environ = []
+        if self._tabfile is not None:
+            oc_environ.append('tabular_data')
+            oc_environ.append(" tabular_data_file '{0}'".format(self._tabfile))
+
+        for k,v in self._kws.items():
+            oc_environ.append('{0} = {1}'.format(str(k), str(v)))
+        if rtype == 'string':
+            return '\n'.join(oc_environ)
+        else: # list
+            return oc_environ
 
 
 def get_opt_results(outfile='dakota.out', rtype='dict'):
@@ -234,7 +720,6 @@ def get_opt_results(outfile='dakota.out', rtype='dict'):
         print("Cannot open %s" % (outfile))
         sys.exit(1)
 
-
 def random_string(length=8):
     """ generate random string with given length
 
@@ -244,12 +729,11 @@ def random_string(length=8):
     return ''.join(
         [random.choice(string.letters + string.digits) for _ in range(length)])
 
-
 def test_dakotainput():
     entry_interface = []
     entry_interface.append('fork')
     entry_interface.append('analysis_driver = "{driver} {argv}"'.format(
-        driver='flamedriver',
+        driver='flamedriver_oc',
         argv='/home/tong1/work/FRIB/projects/flame_github/optdrivers/oc/test_392.lat'))
     entry_interface.append('deactivate = active_set_vector')
 
@@ -279,14 +763,12 @@ def test_dakotainput():
                           responses=entry_responses, )
     dak_inp.write('./test/test_oc.in')
 
-
 def test_get_opt_results():
     opt_vars = get_opt_results('test/flame_oc.out', rtype='dict')
     print opt_vars
 
     opt_vars = get_opt_results('test/flame_oc.out', rtype='list')
     print opt_vars
-
 
 def test_dakotaparam():
     p1 = DakotaParam('x1', 0.1, -10, 10)
@@ -299,8 +781,85 @@ def test_dakotaparam():
     print ' '.join(["{0:>14e}".format(p.lower) for p in plist])
     print ' '.join(["{0:>14e}".format(p.upper) for p in plist])
 
+def test_dakotainterface():
+    if1 = DakotaInterface()
+    print if1
+
+    if2 = DakotaInterface(mode='fork')
+    print if2
+
+    if3 = DakotaInterface(mode='fork', driver='flamedriver_oc')
+    print if3
+
+    if4 = DakotaInterface(mode='fork', driver='flamedriver_oc', deactivate='active_set_vector')
+    print if4
+
+
+    bpms = [1,2,3] # just for demonstration
+    hcors, vcors = [1,3,5], [2,4,6]
+    latfile = 'test.lat'
+    oc_interface = DakotaInterface(mode='fork', latfile=latfile,
+                                   driver='flamedriver_oc',
+                                   bpms=bpms, hcors=hcors, vcors=vcors,
+                                   deactivate='active_set_vector')
+    oc_interface.set_extra(p1='k1', p2='k2')
+    oc_interface.set_extra(p1='kk1', p3='kk3')
+    print oc_interface
+    print oc_interface.get_config()
+
+def test_dakotamodel():
+    oc_model = DakotaModel()
+    print oc_model
+    print oc_model.get_config()
+
+def test_dakotaresponses():
+    oc_responses = DakotaResponses()
+    print oc_responses.get_config()
+
+    oc_responses = DakotaResponses(gradient='analytic')
+    print oc_responses.get_config()
+
+    oc_responses = DakotaResponses(gradient='numerical')
+    print oc_responses.get_config()
+
+    oc_responses = DakotaResponses(gradient='numerical', step=2.0e-7)
+    print oc_responses.get_config()
+
+    oc_responses = DakotaResponses(gradient='numerical', step=2.0e-7, k1='v1', k2='v2')
+    print oc_responses.get_config()
+    print oc_responses
+
+def test_dakotamethod():
+    oc_method = DakotaMethod()
+    print oc_method.get_config()
+
+    oc_method = DakotaMethod(method='ps')
+    print oc_method.get_config()
+
+    oc_method = DakotaMethod(method='ps', max_iterations=200, contraction_factor=0.8)
+    print oc_method.get_config()
+
+    oc_method = DakotaMethod(method='cg')
+    print oc_method.get_config()
+
+    oc_method = DakotaMethod(method='cg', max_iterations=100)
+    print oc_method.get_config()
+
+def test_dakotaenviron():
+    oc_environ = DakotaEnviron()
+    print oc_environ.get_config()
+
+    oc_environ = DakotaEnviron(tabfile='tmp.dat')
+    print oc_environ.get_config()
+
 
 if __name__ == '__main__':
-    test_dakotainput()
-    test_get_opt_results()
-    test_dakotaparam()
+    #test_dakotainput()
+    #test_get_opt_results()
+    #test_dakotaparam()
+    #test_dakotainterface()
+    #test_dakotamodel()
+    #test_dakotaresponses()
+    #test_dakotamethod()
+    test_dakotaenviron()
+    

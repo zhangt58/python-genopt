@@ -17,6 +17,7 @@ import multiprocessing
 import subprocess
 import time
 from shutil import rmtree
+import tempfile
 
 from flame import Machine
 import dakutils
@@ -24,12 +25,48 @@ import dakutils
 
 class DakotaBase(object):
     """ Base class for general optimization, initialized parameters:
-
+        valid keyword parameters:
+            * workdir: root dir for dakota input/output files,
+                       the defualt one should be created in /tmp, or define some dir path
+            * dakexec: full path of dakota executable,
+                       the default one should be *dakota*, or define the full path
+            * dakhead: prefixed name for input/output files of *dakota*, 
+                       the default one is *dakota*
+            * keep: if keep the working directory (i.e. defined by *workdir*), default is False
     """
 
     def __init__(self, **kws):
-        self._dakexec = 'dakota'
-        self._dakout = 'dakota.out'
+        # workdir
+        wdir = kws.get('workdir')
+        if wdir is None:
+            #self._workdir = os.path.join('/tmp', 'dakota_' + dakutils.random_string(6))
+            self._workdir = tempfile.mkdtemp(prefix='dakota_')
+        else:
+            self._workdir = wdir
+            if not os.path.isdir(wdir):
+                os.makedirs(wdir)
+
+        # keep working data?
+        keepflag = kws.get('keep')
+        if keepflag is not None and keepflag:
+            self._keep = True
+        else:
+            self._keep = False
+
+        # dakexec
+        if kws.get('dakexec') is not None:
+            self._dakexec = kws.get('dakexec')
+        else:
+            self._dakexec = 'dakota'
+
+        # dakhead
+        if kws.get('dakhead') is not None:
+            self._dakhead = kws.get('dakhead')
+        else:
+            self._dakhead = 'dakota'
+
+        self._dakin = None
+        self._dakout = None
 
     @property
     def dakexec(self):
@@ -39,6 +76,39 @@ class DakotaBase(object):
     def dakexec(self, dakexec):
         self._dakexec = dakexec
 
+    @property
+    def workdir(self):
+        return self._workdir
+
+    @workdir.setter
+    def workdir(self, wdir):
+        self._workdir = wdir
+
+    @property
+    def dakhead(self):
+        return self._dakhead
+
+    @dakhead.setter
+    def dakhead(self, nprefix):
+        self._dakhead = nprefix
+
+    @property
+    def keep(self):
+        return self._keep
+
+    @keep.setter
+    def keep(self, f):
+        self._keep = f
+
+    def __del__(self):
+        if not self._keep:
+            try:
+                rmtree(self._workdir)
+            except:
+                pass
+        else:
+            print("work files are kept in: %s" % (self._workdir))
+        
 
 class DakotaOC(DakotaBase):
     """ Dakota optimization class with orbit correction driver
@@ -48,13 +118,24 @@ class DakotaOC(DakotaBase):
     :param elem_cor: list of element indice of correctors, always folders of 2
     :param elem_hcor: list of element indice of horizontal correctors
     :param elem_vcor: list of element indice of vertical correctors
+    :param ref_x0: reference orbit in x, list of BPM readings
+    :param ref_y0: reference orbit in y, list of BPM readings
+    :param ref_flag: string flag for objective functions:
+                     "x": sum of dx^2, dx = x-x0;
+                     "y": sum of dy^2, dy = y-y0;
+                     "xy": sum of dx^2 and dy^2;
     :param model: simulation model, 'flame' or 'impact'
-    :param optdriver: analysis driver for optimization, 'flamedriver' by default
-    :param workdir: directory that dakota input/output files should be in
+    :param optdriver: analysis driver for optimization, 'flamedriver_oc' by default
     :param kws: keywords parameters for additional usage, defined in ``DakotaBase`` class
                 valid keys:
-                
-                    * dakexec: full path of dakota executable
+                    * workdir: root dir for dakota input/output files,
+                               the defualt one should be created in /tmp, or define some dir path
+                    * dakexec: full path of dakota executable,
+                               the default one should be *dakota*, or define the full path
+                    * dakhead: prefixed name for input/output files of *dakota*, 
+                               the default one is *dakota*
+                    * keep: if keep the working directory (i.e. defined by *workdir*), 
+                            default is False
     """
 
     def __init__(self,
@@ -63,15 +144,17 @@ class DakotaOC(DakotaBase):
                  elem_cor=None,
                  elem_hcor=None,
                  elem_vcor=None,
+                 ref_x0=None,
+                 ref_y0=None,
+                 ref_flag=None,
                  model=None,
                  optdriver=None,
-                 workdir=None,
                  **kws):
         super(self.__class__, self).__init__(**kws)
 
         if lat_file is not None:
             self._lat_file = os.path.realpath(os.path.expanduser(lat_file))
-        else:  # user example lattice file
+        else:  # use example lattice file
             pass
 
         self._elem_bpm = elem_bpm
@@ -83,25 +166,24 @@ class DakotaOC(DakotaBase):
         elif elem_vcor is not None:
             self._elem_vcor = elem_vcor
 
+        self._ref_x0 = ref_x0
+        self._ref_y0 = ref_y0
+        self._ref_flag = "xy" if ref_flag is None else ref_flag
+
         if model is None:
             self._model = 'FLAME'
         else:
             self._model = model.upper()
 
         if optdriver is None:
-            self._opt_driver = 'flamedriver'
-
-        if workdir is None:
-            self._workdir = os.path.join('/tmp',
-                                         'dakota_' + dakutils.random_string(6))
-
-        if kws.get('dakexec') is not None:
-            self._dakexec = kws.get('dakexec')
+            self._opt_driver = 'flamedriver_oc'
 
         self.set_model()
         self.create_machine(self._lat_file)
         self.set_bpms(self._elem_bpm)
         self.set_cors(self._elem_hcor, self._elem_vcor)
+        self.set_ref_x0(self._ref_x0)
+        self.set_ref_y0(self._ref_y0)
 
     @property
     def hcor(self):
@@ -115,6 +197,26 @@ class DakotaOC(DakotaBase):
     def latfile(self):
         return self._lat_file
 
+    @property
+    def ref_x0(self):
+        return self._ref_x0
+
+    @property
+    def ref_y0(self):
+        return self._ref_y0
+
+    @property
+    def ref_flag(sef):
+        return self._ref_flag
+
+    @ref_flag.setter
+    def ref_flag(self, s):
+        self._ref_flag = s
+
+    @property
+    def bpms(self):
+        return self._elem_bpm
+
     @latfile.setter
     def latfile(self, latfile):
         self._lat_file = latfile
@@ -126,13 +228,6 @@ class DakotaOC(DakotaBase):
     @optdriver.setter
     def optdriver(self, driver):
         self._opt_driver = driver
-
-    def __del__(self):
-        pass
-        #try:
-        #    rmtree(self._workdir)
-        #except:
-        #    pass
 
     def create_machine(self, lat_file):
         """ create machine instance with model configuration
@@ -162,6 +257,28 @@ class DakotaOC(DakotaBase):
     def _create_impact_machine(self, lat_file):
         pass
 
+    def set_ref_x0(self, ref_arr=None):
+        """ set reference orbit in x, if not set, use 0s
+
+        :param ref_arr: array of reference orbit values
+                        size should be the same number as selected BPMs
+        """
+        if ref_arr is None:
+            self._ref_x0 = [0]*len(self._elem_bpm)
+        else:
+            self._ref_x0 = ref_arr
+
+    def set_ref_y0(self, ref_arr=None):
+        """ set reference orbit in y, if not set, use 0s
+
+        :param ref_arr: array of reference orbit values
+                        size should be the same number as selected BPMs
+        """
+        if ref_arr is None:
+            self._ref_y0 = [0]*len(self._elem_bpm)
+        else:
+            self._ref_y0 = ref_arr
+    
     def set_bpms(self, bpm=None):
         """ set BPMs
 
@@ -280,40 +397,26 @@ class DakotaOC(DakotaBase):
         retval = self._machine.find(type=type)
         return retval
 
-    def gen_dakota_input(self, infile='dakota.in', debug=False):
+    def gen_dakota_input(self, infile=None, debug=False):
         """ generate dakota input file
 
         :param infile: dakota input filename
         :param debug: if True, generate a simple test input file
         """
         if not debug:
-            bpms = "'" + ' '.join(
-                ['{0}'.format(i) for i in self._elem_bpm]) + "'"
-            hcors = "'" + ' '.join(
-                ['{0}'.format(i) for i in self._elem_hcor]) + "'"
-            vcors = "'" + ' '.join(
-                ['{0}'.format(i) for i in self._elem_vcor]) + "'"
-
-            oc_interface = []
-            oc_interface.append('fork')
-            oc_interface.append(
-                'analysis_driver = "{driver} {latfile} {bpms} {hcors} {vcors}"'.format(
-                    driver=self.optdriver,
-                    latfile=self.latfile,
-                    bpms=bpms,
-                    hcors=hcors,
-                    vcors=vcors, ))
-            oc_interface.append('deactivate = active_set_vector')
-
             dakinp = dakutils.DakotaInput()
-            dakinp.set_template(name='oc')
-            dakinp.interface = oc_interface
+            #dakinp.set_template(name='oc')
+            dakinp.interface = self._oc_interface
             dakinp.variables = self._oc_variables
+            dakinp.model = self._oc_model
+            dakinp.responses = self._oc_responses
+            dakinp.method = self._oc_method
+            dakinp.environment = self._oc_environ
         else:  # debug is True
             dakinp = dakutils.DakotaInput()
 
-        if not os.path.isdir(self._workdir):
-            os.mkdir(self._workdir)
+        if infile is None:
+            infile = self._dakhead + '.in'
         inputfile = os.path.join(self._workdir, infile)
         outputfile = inputfile.replace('.in', '.out')
         self._dakin = inputfile
@@ -325,7 +428,7 @@ class DakotaOC(DakotaBase):
         should be ready to invoke after ``set_cors()``
 
         :param plist: list of defined parameters (``DakotaParam`` object), 
-            automatically setup if not defined
+                      automatically setup if not defined
         :param initial: initial values for all variables, only valid when plist is None
         :param lower: lower bound for all variables, only valid when plist is None
         :param upper: upper bound for all variables, only valid when plist is None
@@ -353,6 +456,83 @@ class DakotaOC(DakotaBase):
                 oc_variables.append('  descriptors  ' + ''.join(
                     ["{0:>14s}".format(lbl) for lbl in xlbls + ylbls]))
                 self._oc_variables = oc_variables
+        else:  # plist = [p1, p2, ...]
+            n = len(plist)
+            initial_point_string = ' '.join(["{0:>14e}".format(p.initial) for p in plist])
+            lower_bounds_string = ' '.join(["{0:>14e}".format(p.lower) for p in plist])
+            upper_bounds_string = ' '.join(["{0:>14e}".format(p.upper) for p in plist])
+            descriptors_string = ' '.join(["{0:>14s}".format(p.label) for p in plist])
+            oc_variables = []
+            oc_variables.append('continuous_design = {0}'.format(n))
+            oc_variables.append('  initial_point' + initial_point_string)
+            oc_variables.append('  lower_bounds ' + lower_bounds_string)
+            oc_variables.append('  upper_bounds ' + upper_bounds_string)
+            oc_variables.append('  descriptors  ' + descriptors_string)
+            self._oc_variables = oc_variables
+
+    def set_interface(self, interface=None, **kws):
+        """ setup interface block, that is setup ``oc_interface``
+        should be ready to invoke after ``set_cors`` and ``set_bpms``
+
+        :param interface: ``DakotaInterface`` object, automatically setup if not defined
+        """
+        if interface is None:
+            oc_interface = dakutils.DakotaInterface(mode='fork', latfile=self._lat_file,
+                                                    driver='flamedriver_oc',
+                                                    bpms=self._elem_bpm,
+                                                    hcors=self._elem_hcor,
+                                                    vcors=self._elem_vcor,
+                                                    ref_x0=self._ref_x0,
+                                                    ref_y0=self._ref_y0,
+                                                    ref_flag=self._ref_flag,
+                                                    deactivate='active_set_vector')
+        else:
+            oc_interface = interface
+        self._oc_interface = oc_interface.get_config()
+
+    def set_model(self, model=None, **kws):
+        """ setup model block, that is setup ``oc_model``
+
+        :param model: ``DakotaModel`` object, automatically setup if not defined
+        """
+        if model is None:
+            oc_model = dakutils.DakotaModel()
+        else:
+            oc_model = model
+        self._oc_model = oc_model.get_config()
+
+    def set_responses(self, responses=None, **kws):
+        """ setup responses block, that is setup ``oc_responses``
+
+        :param responses: ``DakotaResponses`` object, automatically setup if not defined
+        """
+        if responses is None:
+            oc_responses = dakutils.DakotaResponses(gradient='numerical')
+        else:
+            oc_responses = responses
+        self._oc_responses = oc_responses.get_config()
+
+    def set_environ(self, environ=None):
+        """ setup environment block, that is setup ``oc_environ``
+
+        :param environ: ``DakotaEnviron`` object, automatically setup if not defined
+        """
+        if environ is None:
+            oc_environ = dakutils.DakotaEnviron(tabfile='dakota.dat')
+        else:
+            oc_environ = environ
+        self._oc_environ= oc_environ.get_config()
+
+    def set_method(self, method=None):
+        """ setup method block, that is setup ``oc_method``
+
+        :param method: ``DakotaMethod`` object, automatically setup if not defined
+        """
+        if method is None:
+            oc_method = dakutils.DakotaMethod(method='cg')
+        else:
+            oc_method = method
+        self._oc_method = oc_method.get_config()
 
     def run(self, mpi=False, np=None):
         """ run optimization
@@ -466,6 +646,47 @@ class DakotaOC(DakotaBase):
 
         return zpos, x, y
 
+    def simple_run(self, method='cg', mpi=None, np=None, **kws):
+        """ run optimization after ``set_bpms()`` and ``set_cors()``,
+        by using default configuration and make full use of computing resources.
+
+        :param method: optimization method, 'cg', 'ps', 'cg' by default
+        :param mpi: if True, run DAKOTA in parallel mode, False by default
+        :param np: number of processes to use, only valid when ``mpi`` is True 
+        :param kws: keyword parameters
+            valid keys:
+                * step: gradient step, 1e-6 by default
+                * iternum: max iteration number, 20 by default
+                * evalnum: max function evaulation number, 1000 by default
+        """
+        if method == 'cg':
+            max_iter_num = 20 if kws.get('iternum') is None else kws.get('iternum')
+            step = 1e-6 if kws.get('step') is None else kws.get('step')
+            md = dakutils.DakotaMethod(method='cg', 
+                                       max_iterations=max_iter_num)
+            self.set_method(method=md)
+            re = dakutils.DakotaResponses(gradient='numerical', step=step)
+            self.set_responses(responses=re)
+        else: # 'ps'
+            max_eval_num = 1000 if kws.get('evalnum') is None else kws.get('evalnum')
+            md = dakutils.DakotaMethod(method='ps', 
+                                       max_function_evaluations=max_eval_num)
+            self.set_method(method=md)
+            re = dakutils.DakotaResponses()
+            self.set_responses(responses=re)
+
+        self.set_environ()
+        self.set_model()
+        self.set_variables()
+        self.set_interface()
+        self.gen_dakota_input()
+        if mpi:
+            max_core_num = multiprocessing.cpu_count()
+            if np is None or int(np) > max_core_num:
+                np = max_core_num
+            self.run(mpi=mpi, np=np)
+        else:
+            self.run()
 
 def test_dakotaoc1():
     latfile = 'test/test.lat'
