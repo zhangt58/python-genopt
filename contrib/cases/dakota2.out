@@ -1,0 +1,960 @@
+Dakota version 6.4 released May 16, 2016.
+Subversion revision 4264 built Oct 12 2016 14:35:14.
+Running MPI Dakota executable in parallel on 4 processors.
+Start time: Mon Nov  7 14:09:31 2016
+
+-----------------------
+Begin DAKOTA input file
+dakota2.in
+-----------------------
+environment
+  tabular_data
+  #  tabular_data_file 'dakota2.dat'
+
+method
+  coliny_pattern_search
+    solution_accuracy = 1e-4
+    initial_delta = 0.5
+    threshold_delta = 1e-4
+    exploratory_moves basic_pattern
+    contraction_factor = 0.75
+    max_iterations = 100
+    max_function_evaluations = 500
+
+
+model
+  single
+
+variables
+  continuous_design = 16
+    initial_point  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04  1.000000e-04
+    lower_bounds  -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02 -1.000000e-02
+    upper_bounds   1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02  1.000000e-02
+    descriptors          'x001'        'x002'        'x003'        'x004'        'x005'        'x006'        'x007'        'x008'        'y001'        'y002'        'y003'        'y004'        'y005'        'y006'        'y007'        'y008'
+
+interface
+  fork
+  analysis_driver = "flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536'"
+  deactivate = active_set_vector
+
+responses
+  num_objective_functions=1
+  no_gradients
+  no_hessians
+
+---------------------
+End DAKOTA input file
+---------------------
+
+Using Dakota input file 'dakota2.in'
+Writing new restart file dakota.rst
+
+Seed (system-generated) = 1478545771
+
+-----------------------------------------------------------------------------
+DAKOTA parallel configuration:
+
+Level			num_servers    procs_per_server    partition
+-----			-----------    ----------------    ---------
+concurrent evaluations	     4		      1		   peer
+concurrent analyses	     1		      1		   peer
+multiprocessor analysis	     1		     N/A	   N/A
+
+Total parallelism levels =   1 (1 dakota, 0 analysis)
+-----------------------------------------------------------------------------
+
+>>>>> Executing environment.
+
+>>>>> Running coliny_pattern_search iterator.
+
+---------------------
+Begin Evaluation    1
+---------------------
+Parameters for evaluation 1:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+blocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_3aec4b99 /tmp/dakota_results_6fb62ad7
+
+Active response data for evaluation 1:
+Active set vector = { 1 }
+                      2.3418290467e+03 obj_fn
+
+
+
+---------------------
+Begin Evaluation    2
+---------------------
+Parameters for evaluation 2:
+                      1.1000000000e-03 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 2 added to queue)
+
+---------------------
+Begin Evaluation    3
+---------------------
+Parameters for evaluation 3:
+                      1.0000000000e-04 x001
+                      1.1000000000e-03 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 3 added to queue)
+
+---------------------
+Begin Evaluation    4
+---------------------
+Parameters for evaluation 4:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.1000000000e-03 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 4 added to queue)
+
+---------------------
+Begin Evaluation    5
+---------------------
+Parameters for evaluation 5:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.1000000000e-03 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 5 added to queue)
+
+Blocking synchronize of 4 asynchronous evaluations
+Peer dynamic schedule: first pass assigning 3 jobs among 3 remote peers
+Peer 1 assigning evaluation 2 to peer 2
+Peer 1 assigning evaluation 3 to peer 3
+Peer 1 assigning evaluation 4 to peer 4
+Peer dynamic schedule: first pass launching 1 local jobs
+Initiating evaluation 5
+nonblocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_2d8b2692 /tmp/dakota_results_8c20522d
+Evaluation 3 has returned from peer server 3
+Evaluation 2 has returned from peer server 2
+Evaluation 4 has returned from peer server 4
+Evaluation 5 has completed
+
+Active response data for evaluation 2:
+Active set vector = { 1 }
+                      3.0325939796e+03 obj_fn
+
+
+Active response data for evaluation 3:
+Active set vector = { 1 }
+                      2.0404807534e+03 obj_fn
+
+
+Active response data for evaluation 4:
+Active set vector = { 1 }
+                      2.4159542409e+03 obj_fn
+
+
+Active response data for evaluation 5:
+Active set vector = { 1 }
+                      4.2072320546e+03 obj_fn
+
+
+Blocking synchronize of 0 asynchronous evaluations
+
+---------------------
+Begin Evaluation    6
+---------------------
+Parameters for evaluation 6:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.1000000000e-03 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 6 added to queue)
+
+---------------------
+Begin Evaluation    7
+---------------------
+Parameters for evaluation 7:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.1000000000e-03 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 7 added to queue)
+
+---------------------
+Begin Evaluation    8
+---------------------
+Parameters for evaluation 8:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.1000000000e-03 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 8 added to queue)
+
+---------------------
+Begin Evaluation    9
+---------------------
+Parameters for evaluation 9:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.1000000000e-03 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 9 added to queue)
+
+Blocking synchronize of 4 asynchronous evaluations
+Peer dynamic schedule: first pass assigning 3 jobs among 3 remote peers
+Peer 1 assigning evaluation 6 to peer 2
+Peer 1 assigning evaluation 7 to peer 3
+Peer 1 assigning evaluation 8 to peer 4
+Peer dynamic schedule: first pass launching 1 local jobs
+Initiating evaluation 9
+nonblocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_fb51111c /tmp/dakota_results_c27cba23
+Evaluation 8 has returned from peer server 4
+Evaluation 6 has returned from peer server 2
+Evaluation 7 has returned from peer server 3
+Evaluation 9 has completed
+
+Active response data for evaluation 6:
+Active set vector = { 1 }
+                      4.2545396034e+03 obj_fn
+
+
+Active response data for evaluation 7:
+Active set vector = { 1 }
+                      2.1285221833e+03 obj_fn
+
+
+Active response data for evaluation 8:
+Active set vector = { 1 }
+                      1.7809347443e+03 obj_fn
+
+
+Active response data for evaluation 9:
+Active set vector = { 1 }
+                      2.6930837902e+03 obj_fn
+
+
+Blocking synchronize of 0 asynchronous evaluations
+
+---------------------
+Begin Evaluation   10
+---------------------
+Parameters for evaluation 10:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.1000000000e-03 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 10 added to queue)
+
+---------------------
+Begin Evaluation   11
+---------------------
+Parameters for evaluation 11:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.1000000000e-03 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 11 added to queue)
+
+---------------------
+Begin Evaluation   12
+---------------------
+Parameters for evaluation 12:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.1000000000e-03 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 12 added to queue)
+
+---------------------
+Begin Evaluation   13
+---------------------
+Parameters for evaluation 13:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.1000000000e-03 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 13 added to queue)
+
+Blocking synchronize of 4 asynchronous evaluations
+Peer dynamic schedule: first pass assigning 3 jobs among 3 remote peers
+Peer 1 assigning evaluation 10 to peer 2
+Peer 1 assigning evaluation 11 to peer 3
+Peer 1 assigning evaluation 12 to peer 4
+Peer dynamic schedule: first pass launching 1 local jobs
+Initiating evaluation 13
+nonblocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_633b7df6 /tmp/dakota_results_b2d7403f
+Evaluation 11 has returned from peer server 3
+Evaluation 12 has returned from peer server 4
+Evaluation 10 has returned from peer server 2
+Evaluation 13 has completed
+
+Active response data for evaluation 10:
+Active set vector = { 1 }
+                      1.1457656264e+03 obj_fn
+
+
+Active response data for evaluation 11:
+Active set vector = { 1 }
+                      2.6172053301e+03 obj_fn
+
+
+Active response data for evaluation 12:
+Active set vector = { 1 }
+                      2.9171507446e+03 obj_fn
+
+
+Active response data for evaluation 13:
+Active set vector = { 1 }
+                      2.0830982150e+03 obj_fn
+
+
+Blocking synchronize of 0 asynchronous evaluations
+
+---------------------
+Begin Evaluation   14
+---------------------
+Parameters for evaluation 14:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.1000000000e-03 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 14 added to queue)
+
+---------------------
+Begin Evaluation   15
+---------------------
+Parameters for evaluation 15:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.1000000000e-03 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 15 added to queue)
+
+---------------------
+Begin Evaluation   16
+---------------------
+Parameters for evaluation 16:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.1000000000e-03 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 16 added to queue)
+
+---------------------
+Begin Evaluation   17
+---------------------
+Parameters for evaluation 17:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.1000000000e-03 y008
+
+(Asynchronous job 17 added to queue)
+
+Blocking synchronize of 4 asynchronous evaluations
+Peer dynamic schedule: first pass assigning 3 jobs among 3 remote peers
+Peer 1 assigning evaluation 14 to peer 2
+Peer 1 assigning evaluation 15 to peer 3
+Peer 1 assigning evaluation 16 to peer 4
+Peer dynamic schedule: first pass launching 1 local jobs
+Initiating evaluation 17
+nonblocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_65dc418e /tmp/dakota_results_f735c9a4
+Evaluation 14 has returned from peer server 2
+Evaluation 15 has returned from peer server 3
+Evaluation 16 has returned from peer server 4
+Evaluation 17 has completed
+
+Active response data for evaluation 14:
+Active set vector = { 1 }
+                      2.4109989426e+03 obj_fn
+
+
+Active response data for evaluation 15:
+Active set vector = { 1 }
+                      4.0611760147e+03 obj_fn
+
+
+Active response data for evaluation 16:
+Active set vector = { 1 }
+                      4.4749467665e+03 obj_fn
+
+
+Active response data for evaluation 17:
+Active set vector = { 1 }
+                      2.3987775637e+03 obj_fn
+
+
+Blocking synchronize of 0 asynchronous evaluations
+
+---------------------
+Begin Evaluation   18
+---------------------
+Parameters for evaluation 18:
+                     -9.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 18 added to queue)
+
+---------------------
+Begin Evaluation   19
+---------------------
+Parameters for evaluation 19:
+                      1.0000000000e-04 x001
+                     -9.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 19 added to queue)
+
+---------------------
+Begin Evaluation   20
+---------------------
+Parameters for evaluation 20:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                     -9.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 20 added to queue)
+
+---------------------
+Begin Evaluation   21
+---------------------
+Parameters for evaluation 21:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                     -9.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 21 added to queue)
+
+Blocking synchronize of 4 asynchronous evaluations
+Peer dynamic schedule: first pass assigning 3 jobs among 3 remote peers
+Peer 1 assigning evaluation 18 to peer 2
+Peer 1 assigning evaluation 19 to peer 3
+Peer 1 assigning evaluation 20 to peer 4
+Peer dynamic schedule: first pass launching 1 local jobs
+Initiating evaluation 21
+nonblocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_bef28d5b /tmp/dakota_results_0933993c
+Evaluation 18 has returned from peer server 2
+Evaluation 20 has returned from peer server 4
+Evaluation 21 has completed
+Evaluation 19 has returned from peer server 3
+
+Active response data for evaluation 18:
+Active set vector = { 1 }
+                      1.7454894279e+03 obj_fn
+
+
+Active response data for evaluation 19:
+Active set vector = { 1 }
+                      2.7730779172e+03 obj_fn
+
+
+Active response data for evaluation 20:
+Active set vector = { 1 }
+                      2.3309755908e+03 obj_fn
+
+
+Active response data for evaluation 21:
+Active set vector = { 1 }
+                      1.2219283609e+03 obj_fn
+
+
+Blocking synchronize of 0 asynchronous evaluations
+
+---------------------
+Begin Evaluation   22
+---------------------
+Parameters for evaluation 22:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                     -9.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 22 added to queue)
+
+---------------------
+Begin Evaluation   23
+---------------------
+Parameters for evaluation 23:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                     -9.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 23 added to queue)
+
+---------------------
+Begin Evaluation   24
+---------------------
+Parameters for evaluation 24:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                     -9.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 24 added to queue)
+
+---------------------
+Begin Evaluation   25
+---------------------
+Parameters for evaluation 25:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                     -9.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 25 added to queue)
+
+Blocking synchronize of 4 asynchronous evaluations
+Peer dynamic schedule: first pass assigning 3 jobs among 3 remote peers
+Peer 1 assigning evaluation 22 to peer 2
+Peer 1 assigning evaluation 23 to peer 3
+Peer 1 assigning evaluation 24 to peer 4
+Peer dynamic schedule: first pass launching 1 local jobs
+Initiating evaluation 25
+nonblocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_00bc7844 /tmp/dakota_results_64eef931
+Evaluation 23 has returned from peer server 3
+Evaluation 25 has completed
+Evaluation 24 has returned from peer server 4
+Evaluation 22 has returned from peer server 2
+
+Active response data for evaluation 22:
+Active set vector = { 1 }
+                      1.1749939017e+03 obj_fn
+
+
+Active response data for evaluation 23:
+Active set vector = { 1 }
+                      2.6169071265e+03 obj_fn
+
+
+Active response data for evaluation 24:
+Active set vector = { 1 }
+                      2.9983723446e+03 obj_fn
+
+
+Active response data for evaluation 25:
+Active set vector = { 1 }
+                      2.0761967783e+03 obj_fn
+
+
+Blocking synchronize of 0 asynchronous evaluations
+
+---------------------
+Begin Evaluation   26
+---------------------
+Parameters for evaluation 26:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                     -9.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 26 added to queue)
+
+---------------------
+Begin Evaluation   27
+---------------------
+Parameters for evaluation 27:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                     -9.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 27 added to queue)
+
+---------------------
+Begin Evaluation   28
+---------------------
+Parameters for evaluation 28:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                     -9.0000000000e-04 y003
+                      1.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 28 added to queue)
+
+---------------------
+Begin Evaluation   29
+---------------------
+Parameters for evaluation 29:
+                      1.0000000000e-04 x001
+                      1.0000000000e-04 x002
+                      1.0000000000e-04 x003
+                      1.0000000000e-04 x004
+                      1.0000000000e-04 x005
+                      1.0000000000e-04 x006
+                      1.0000000000e-04 x007
+                      1.0000000000e-04 x008
+                      1.0000000000e-04 y001
+                      1.0000000000e-04 y002
+                      1.0000000000e-04 y003
+                     -9.0000000000e-04 y004
+                      1.0000000000e-04 y005
+                      1.0000000000e-04 y006
+                      1.0000000000e-04 y007
+                      1.0000000000e-04 y008
+
+(Asynchronous job 29 added to queue)
+
+Blocking synchronize of 4 asynchronous evaluations
+Peer dynamic schedule: first pass assigning 3 jobs among 3 remote peers
+Peer 1 assigning evaluation 26 to peer 2
+Peer 1 assigning evaluation 27 to peer 3
+Peer 1 assigning evaluation 28 to peer 4
+Peer dynamic schedule: first pass launching 1 local jobs
+Initiating evaluation 29
+nonblocking fork: flamedriver /home/tong1/work/FRIB/projects/packages/genopt/lattice/test_392.lat '5 18 31 40 53 66 76 89 102 111 126 141 154 163 178 193 206 215 230 245 258 267 282 297 310 320 335 350 363 373 388 403 416 426 441 456 469 479 494 509 522 532 547 562 575 585 600 615 628 638 653 668 681 703 711 746 754 791 799 875 884 895 926 960 1012 1025 1057 1090 1117 1139 1154 1163 1211 1229 1237' '393 408 431 446 461 484 499 514' '407 430 445 460 483 498 513 536' /tmp/dakota_params_280e4d7e /tmp/dakota_results_1707804c

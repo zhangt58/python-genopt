@@ -17,6 +17,8 @@ Extra Python packages required:
 Recently, supported optimization drivers are:
   - ``flamedriver_oc``, orbit correction engine built with core library of ``flame``;
 
-Tong Zhang <zhangt@frib.msu.edu>
+   Drivers are built from another repo: `optdrivers <https://github.com/archman/optdrivers>`_
+
+Tong Zhang
 
 2016-10-26 09:31:41 AM EDT
