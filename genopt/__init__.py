@@ -1,4 +1,10 @@
-from .dakutils import DakotaInput, DakotaParam
+from .dakutils import DakotaInput
+from .dakutils import DakotaParam
+from .dakutils import DakotaInterface
+from .dakutils import DakotaMethod
+from .dakutils import DakotaModel
+from .dakutils import DakotaResponses
+from .dakutils import DakotaEnviron
 from .dakutils import get_opt_results
 from .dakopt   import DakotaBase, DakotaOC
 
@@ -33,14 +39,9 @@ incorporating optimization algorithms provided by DAKOTA.
 >>> oc_ins.set_bpms(bpm=bpms)
 >>> oc_ins.set_cors(cor=cors)
 >>> 
->>> # set parameters
->>> oc_ins.set_variables()
->>> 
->>> # generate dakota input file
->>> oc_ins.gen_dakota_input()
->>> 
->>> # run optimization, enable MPI
->>> oc_ins.run(mpi=True, np=4)
+>>> # run optimization, enable MPI, 
+>>> # with optimization of CG, 20 iterations
+>>> oc_ins.simple_run(method='cg', mpi=True, np=4, iternum=20)
 >>> 
 >>> # get optimized results:
 >>> opt_vars = oc_ins.get_opt_results()
@@ -49,9 +50,11 @@ incorporating optimization algorithms provided by DAKOTA.
 >>> oc_ins.plot()
 >>> 
 >>> # or save the orbit data (to file)
->>> oc_ins.get_orbit((oc_ins.hcor, oc_ins.vcor), opt_vars, outfile='orbit.dat')
+>>> oc_ins.get_orbit(outfile='orbit.dat')
 >>> 
 """ % (__version__)
 
 __all__ = ["DakotaInput", "DakotaParam", "DakotaBase", "DakotaOC",
+           "DakotaEnviron", "DakotaInterface", "DakotaMethod",
+           "DakotaModel", "DakotaResponses",
            "get_opt_results"]

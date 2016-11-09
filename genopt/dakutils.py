@@ -398,7 +398,7 @@ class DakotaResponses(object):
     :param kws: keyword parameters for gradients and hessians
         valid keys: any available for responses
         among which key name of 'grad' is for gradients configuration, 
-        the value should be a dict
+        the value should be a dict (future)
 
     :Example:
 
@@ -859,7 +859,7 @@ if __name__ == '__main__':
     #test_dakotaparam()
     #test_dakotainterface()
     #test_dakotamodel()
-    #test_dakotaresponses()
+    test_dakotaresponses()
     #test_dakotamethod()
-    test_dakotaenviron()
+    #test_dakotaenviron()
     

@@ -223,6 +223,23 @@ def demo6():
     # plot
     oc_ins.plot()
 
+def demo7():
+    """ orbit correction test
+    """
+    lattice_dir = "../lattice"
+    latname = 'test_392.lat'
+    latfile = os.path.join(lattice_dir, latname)
+    oc_ins = genopt.DakotaOC(lat_file=latfile, 
+                             workdir='./oc_tmp7', 
+                             keep=True)
+
+    oc_ins.simple_run(method='cg', mpi=True, np=4, iternum=20, evalnum=2000)
+    
+    # get output
+    oc_ins.get_orbit(outfile='orbit7.dat')
+    # plot
+    oc_ins.plot()
+
 
 if __name__ == '__main__':
     #demo1()
@@ -230,4 +247,5 @@ if __name__ == '__main__':
     #demo3()
     #demo4()
     #demo5()
-    demo6()
+    #demo6()
+    demo7()

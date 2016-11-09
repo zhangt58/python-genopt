@@ -186,11 +186,11 @@ class DakotaOC(DakotaBase):
         self.set_ref_y0(self._ref_y0)
 
     @property
-    def hcor(self):
+    def hcors(self):
         return self._elem_hcor
 
     @property
-    def vcor(self):
+    def vcors(self):
         return self._elem_vcor
 
     @property
