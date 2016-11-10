@@ -20,7 +20,9 @@ Recently, supported optimization drivers are:
   
 * ``flamedriver_oc``, orbit correction engine built with core library of ``flame``;
 
-Drivers are built from another repo: [optdrivers](https://github.com/archman/optdrivers)
+Drivers are built from another repo: [optdrivers](https://stash.frib.msu.edu/projects/PHYAPP/repos/optdrivers/)
+
+--------------------------------------------------------------------------
 
 Tong Zhang
 
