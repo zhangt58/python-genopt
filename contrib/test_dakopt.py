@@ -240,6 +240,57 @@ def demo7():
     # plot
     oc_ins.plot()
 
+def demo8():
+    """ orbit correction test
+    """
+    lattice_dir = "../lattice"
+    latname = 'test_392.lat'
+    latfile = os.path.join(lattice_dir, latname)
+    oc_ins = genopt.DakotaOC(lat_file=latfile, 
+                             workdir='./oc_tmp7', 
+                             keep=True)
+
+    hcors = oc_ins.get_all_cors(type='h')
+    vcors = oc_ins.get_all_cors(type='v')
+    oc_ins.set_cors(hcor=hcors, vcor=vcors)
+
+    oc_ins.simple_run(method='cg', mpi=True, np=4, iternum=20, evalnum=2000)
+    
+    # get output
+    #r = oc_ins.get_opt_results(label='fancy')
+    #print r
+    
+    # dump optimized lattice file
+    outfile = oc_ins.get_opt_latfile('optall.lat')
+    print outfile
+    #oc_ins.get_orbit(outfile='orbit8.dat')
+    ## plot
+    #oc_ins.plot()
+
+def demo9():
+    """ orbit correction test
+    """
+    lattice_dir = "../lattice"
+    latname = 'test_392.lat'
+    latfile = os.path.join(lattice_dir, latname)
+    oc_ins = genopt.DakotaOC(lat_file=latfile)
+
+    hcors = oc_ins.get_all_cors(type='h')
+    vcors = oc_ins.get_all_cors(type='v')
+    oc_ins.set_cors(hcor=hcors, vcor=vcors)
+
+    oc_ins.simple_run(method='cg', mpi=True, np=4, iternum=20)
+    
+    # get output
+    #r = oc_ins.get_opt_results(label='fancy')
+    #print r
+    
+    # dump optimized lattice file
+    #outfile = oc_ins.get_opt_latfile('optall.lat')
+    #oc_ins.get_orbit(outfile='orbit8.dat')
+    ## plot
+    #oc_ins.plot()
+
 
 if __name__ == '__main__':
     #demo1()
@@ -248,4 +299,5 @@ if __name__ == '__main__':
     #demo4()
     #demo5()
     #demo6()
-    demo7()
+    #demo7()
+    demo8()

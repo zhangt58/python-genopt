@@ -26,13 +26,14 @@ import dakutils
 class DakotaBase(object):
     """ Base class for general optimization, initialized parameters:
         valid keyword parameters:
-            * workdir: root dir for dakota input/output files,
-                       the defualt one should be created in /tmp, or define some dir path
-            * dakexec: full path of dakota executable,
-                       the default one should be *dakota*, or define the full path
-            * dakhead: prefixed name for input/output files of *dakota*, 
-                       the default one is *dakota*
-            * keep: if keep the working directory (i.e. defined by *workdir*), default is False
+
+        * workdir: root dir for dakota input/output files,
+          the defualt one should be created in /tmp, or define some dir path
+        * dakexec: full path of dakota executable,
+          the default one should be *dakota*, or define the full path
+        * dakhead: prefixed name for input/output files of *dakota*, 
+          the default one is *dakota*
+        * keep: if keep the working directory (i.e. defined by *workdir*), default is False
     """
 
     def __init__(self, **kws):
@@ -121,21 +122,23 @@ class DakotaOC(DakotaBase):
     :param ref_x0: reference orbit in x, list of BPM readings
     :param ref_y0: reference orbit in y, list of BPM readings
     :param ref_flag: string flag for objective functions:
-                     "x": sum of dx^2, dx = x-x0;
-                     "y": sum of dy^2, dy = y-y0;
-                     "xy": sum of dx^2 and dy^2;
+
+           1. "x": :math:`\sum \Delta x^2`, :math:`\Delta x = x-x_0`;
+           2. "y": :math:`\sum \Delta y^2`, :math:`\Delta y = y-y_0`;
+           3. "xy": :math:`\sum \Delta x^2 + \sum \Delta y^2`.
+
     :param model: simulation model, 'flame' or 'impact'
     :param optdriver: analysis driver for optimization, 'flamedriver_oc' by default
     :param kws: keywords parameters for additional usage, defined in ``DakotaBase`` class
                 valid keys:
-                    * workdir: root dir for dakota input/output files,
-                               the defualt one should be created in /tmp, or define some dir path
-                    * dakexec: full path of dakota executable,
-                               the default one should be *dakota*, or define the full path
-                    * dakhead: prefixed name for input/output files of *dakota*, 
-                               the default one is *dakota*
-                    * keep: if keep the working directory (i.e. defined by *workdir*), 
-                            default is False
+               * *workdir*: root dir for dakota input/output files,
+                 the defualt one should be created in /tmp, or define some dir path
+               * *dakexec*: full path of dakota executable,
+                 the default one should be *dakota*, or define the full path
+               * *dakhead*: prefixed name for input/output files of *dakota*, 
+                 the default one is *dakota*
+               * *keep*: if keep the working directory (i.e. defined by *workdir*), 
+                 default is False
     """
 
     def __init__(self,
@@ -229,6 +232,16 @@ class DakotaOC(DakotaBase):
     def optdriver(self, driver):
         self._opt_driver = driver
 
+    def get_machine(self):
+        """ get flame machine object for potential usage
+
+        :return: flame machine object or None
+        """
+        try:
+            return self._machine
+        except:
+            return None
+    
     def create_machine(self, lat_file):
         """ create machine instance with model configuration
         
@@ -556,16 +569,34 @@ class DakotaOC(DakotaBase):
                 dakout=self._dakout)
         subprocess.call(run_command.split())
 
-    def get_opt_results(self, outfile=None, rtype='dict'):
+    def get_opt_results(self, outfile=None, rtype='dict', label='plain'):
         """ extract optimized results from dakota output
 
         :param outfile: file name of dakota output file, 
             'dakota.out' by default
         :param rtype: type of returned results, 'dict' or 'list', 
             'dict' by default
+        :param label: label types for returned variables, only valid when rtype 'dict', 
+            'plain' by default:
+
+                * *'plain'*: variable labels with format of ``x1``, ``x2``, ``y1``, ``y2``, etc.
+                  e.g. ``{'x1': v1, 'y1': v2}``
+                * *'fancy'*: variable labels with the name defined in lattice file,
+                  e.g. ``'LS1_CA01:DCH_D1131'``, dict returned sample: 
+                  ``{'LS1_CA01:DCH_D1131': {'id':9, 'config':{'theta_x':v1}}}``
+
+        .. note:: The ``fancy`` option will make re-configuring flame machine in a more 
+            convenient way, such as:
+
+            >>> opt_cors = get_opt_results(label='fancy')
+            >>> for k,v in opt_cors.items():
+            >>>     m.reconfigure(v['id'], v['config'])
+            >>> # here m is an instance of flame.Machine class
+            >>> 
+
         :return: by default return a dict of optimized results with each item
-            of the format like "x1":0.1, etc., or if rtype='list', return a 
-            list of values, when the keys are ascend sorted.
+            of the format like "x1":0.1 or more fancy format by set label with 'fancy', etc.,
+            if rtype='list', return a list of values, when the keys are ascend sorted.
 
         :Example:
         
@@ -577,9 +608,21 @@ class DakotaOC(DakotaBase):
         [-0.0017913264033, 0.0020782814353]
         """
         if outfile is None:
-            return dakutils.get_opt_results(outfile=self._dakout, rtype=rtype)
-        else:
+            outfile=self._dakout
+        if rtype == 'list':
             return dakutils.get_opt_results(outfile=outfile, rtype=rtype)
+        else:
+            rdict = dakutils.get_opt_results(outfile=outfile, rtype=rtype)
+            if label == 'plain':
+                return rdict
+            else:  # label = 'fancy'
+                val_x = [v for (k,v) in sorted(rdict.items()) if k.startswith('x')]
+                val_y = [v for (k,v) in sorted(rdict.items()) if k.startswith('y')]
+                vx = [{'id': i, 'config':{'theta_x': v}} for i,v in zip(self._elem_hcor, val_x)]
+                vy = [{'id': i, 'config':{'theta_y': v}} for i,v in zip(self._elem_vcor, val_y)]
+                kx = [self._machine.conf(i)['name'] for i in self._elem_hcor]
+                ky = [self._machine.conf(i)['name'] for i in self._elem_vcor]
+                return dict(zip(kx+ky, vx+vy))
 
     def plot(self, outfile=None, figsize=(10, 8), dpi=120, **kws):
         """ show orbit
@@ -594,7 +637,7 @@ class DakotaOC(DakotaBase):
             opt_vars = self.get_opt_results(outfile=outfile)
 
         idx_h, idx_v = self._elem_hcor, self._elem_vcor
-        zpos, x, y = self.get_orbit((idx_h, idx_v), opt_vars)
+        zpos, x, y, mtmp = self.get_orbit((idx_h, idx_v), opt_vars)
 
         fig = plt.figure(figsize=figsize, dpi=dpi, **kws)
         ax = fig.add_subplot(111)
@@ -612,6 +655,7 @@ class DakotaOC(DakotaBase):
         :param idx: (idx_hcor, idx_vcor), tuple of list of indices of h/v cors
         :param val: values for each correctos, h/v
         :param outfile: filename to save the data
+        :return: tuple of zpos, env_x, env_y, machine
         """
         if idx is None:
             idx_x, idx_y = self._elem_hcor, self._elem_vcor
@@ -644,7 +688,7 @@ class DakotaOC(DakotaBase):
                            "zpos [m]", "x [mm]", "y [mm]"),
                        delimiter=' ')
 
-        return zpos, x, y
+        return zpos, x, y, m
 
     def simple_run(self, method='cg', mpi=None, np=None, **kws):
         """ run optimization after ``set_bpms()`` and ``set_cors()``,
@@ -687,6 +731,24 @@ class DakotaOC(DakotaBase):
             self.run(mpi=mpi, np=np)
         else:
             self.run()
+
+    def get_opt_latfile(self, outfile='out.lat'):
+        """ get optimized lattice file for potential next usage,
+        ``run()`` or ``simple_run()`` should be evoked first to get the 
+        optimized results.
+        
+        :param outfile: file name for generated lattice file
+        :return: lattice file name or None if failed
+        """
+        try:
+            z, x, y, m = self.get_orbit()
+            rfile = dakutils.generate_latfile(m, latfile=outfile)
+        except:
+            print("Failed to generate latfile.")
+            rfile = None
+        finally:
+            return rfile
+
 
 def test_dakotaoc1():
     latfile = 'test/test.lat'

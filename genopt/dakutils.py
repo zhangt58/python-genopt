@@ -14,6 +14,7 @@ import os
 import sys
 import random
 import string
+from numpy import ndarray
 
 
 class DakotaInput(object):
@@ -130,9 +131,9 @@ class DakotaInput(object):
 class DakotaParam(object):
     """ create dakota variable for ``variables`` block
 
-    :param label: string to represent itself, e.g. 'x001',
-                  it is recommended to annotate the number with the format of "%03d",
-                  i.e. 1 --> 001, 10 --> 010, 100 --> 100
+    :param label: string to represent itself, e.g. ``x001``,
+                  it is recommended to annotate the number with the format of ``%03d``,
+                  i.e. ``1 --> 001``, ``10 --> 010``, ``100 --> 100``, etc.
     :param initial: initial value, 0.0 by default
     :param lower: lower bound, -1.0e10 by default
     :param upper: upper bound, 1.0e10 by default
@@ -197,9 +198,11 @@ class DakotaInterface(object):
     :param ref_x0: array of BPM readings for reference orbit in x, if not defined, use 0s
     :param ref_y0: array of BPM readings for reference orbit in y, if not defined, use 0s
     :param ref_flag: string flag for objective functions:
-                     "x": sum of dx^2, dx = x-x0;
-                     "y": sum of dy^2, dy = y-y0;
-                     "xy": sum of dx^2 and dy^2;
+
+           1. "x": :math:`\sum \Delta x^2`, :math:`\Delta x = x-x_0`;
+           2. "y": :math:`\sum \Delta y^2`, :math:`\Delta y = y-y_0`;
+           3. "xy": :math:`\sum \Delta x^2 + \sum \Delta y^2`.
+
     :param kws: keyword parameters, valid keys: 
         e.g.:
         * deactivate, possible value: 'active_set_vector'
@@ -224,7 +227,7 @@ class DakotaInterface(object):
     >>> oc_interface.set_extra(p1='v1', p2='v2')
     >>> # get configuration
     >>> config_str = oc_interface.get_config()
-    >>>
+    >>> 
     """
     def __init__(self, mode='fork', driver='flamedriver_oc', latfile=None,
                  bpms=None, hcors=None, vcors=None, ref_x0=None, ref_y0=None, ref_flag=None, **kws):
@@ -429,7 +432,7 @@ class DakotaResponses(object):
     >>> print oc_responses.get_config()
     ['num_objective_functions = 1', 'numerical_gradients', ' method_source dakota', 
      ' interval_type forward', ' fd_gradient_step_size 2e-07', 'no_hessians', 'k2 = v2', 'k1 = v1']
-    >>>
+    >>> 
     """
     def __init__(self, nfunc=1, gradient=None, hessian=None, **kws):
         self._nfunc = nfunc
@@ -538,7 +541,7 @@ class DakotaMethod(object):
     >>> oc_method = DakotaMethod(method='cg', max_iterations=100)
     >>> print oc_method.get_config()
     ['conmin_frcg', ' convergence_tolerance 0.0001', ' max_iterations 100']
-    >>>
+    >>> 
     """
     def __init__(self, method='cg', iternum=20, tolerance=1e-4, **kws):
         self._method = method
@@ -637,7 +640,7 @@ class DakotaEnviron(object):
     >>> oc_environ = DakotaEnviron(tabfile='tmp.dat')
     >>> print oc_environ.get_config()
     ['tabular_data', " tabular_data_file 'tmp.dat'"]
-    >>>
+    >>> 
     """
     def __init__(self, tabfile=None, **kws):
         self._tabfile = tabfile
@@ -666,6 +669,102 @@ class DakotaEnviron(object):
             return '\n'.join(oc_environ)
         else: # list
             return oc_environ
+
+
+def generate_latfile(machine, latfile='out.lat'):
+    """ Generate lattice file for the usage of FLAME code
+
+    :param machine: flame machine object
+    :param latfile: file name for generated lattice file, 'out.lat' by default
+    :return: None if failed to generate lattice file, or the out file name
+
+    :Example:
+
+    >>> from flame import Machine
+    >>> latfile = 'test.lat'
+    >>> m = Machine(open(latfile))
+    >>> outfile1 = generate_latfile(m, 'out1.lat')
+    >>> m.reconfigure(80, {'theta_x': 0.1})
+    >>> outfile2 = generate_latfile(m, 'out2.lat')
+    >>> 
+
+    .. warning:: To get element configuration only by ``m.conf(i)`` method,
+        where ``m`` is ``flame.Machine`` object, ``i`` is element index,
+        when some re-configuring operation is done, ``m.conf(i)`` will be update,
+        but ``m.conf()["elements"]`` remains with the initial value.
+    """
+    m = machine
+    try:
+        mconf = m.conf()
+        mks = mconf.keys()
+    except:
+        print("Failed to load FLAME machine object.")
+        return None
+
+    try:
+        mconf_ks = mconf.keys()
+        [mconf_ks.remove(i) for i in ['elements', 'name'] if i in mconf_ks]
+
+        #
+        lines = []
+        for k in mconf_ks:
+            v = mconf[k]
+            if isinstance(v, ndarray):
+                v = v.tolist()
+            if isinstance(v, str):
+                v = '"{0}"'.format(v)
+            line = '{k} = {v};'.format(k=k, v=v)
+            lines.append(line)
+
+        mconfe = mconf['elements']
+
+        # element configuration
+        elem_num = len(mconfe)
+        elem_name_list = []
+        for i in range(0, elem_num):
+            elem_i = m.conf(i)
+            ename, etype = elem_i['name'], elem_i['type']
+            if ename in elem_name_list:
+                continue
+            elem_name_list.append(ename)
+            ki = elem_i.keys()
+            elem_k = set(ki).difference(mks)
+            if etype == 'stripper':
+                elem_k.add('IonChargeStates')
+                elem_k.add('NCharge')
+            p = []
+            for k, v in elem_i.items():
+                if k in elem_k and k not in ['name', 'type']:
+                    if isinstance(v, ndarray):
+                        v = v.tolist()
+                    if isinstance(v, str):
+                        v = '"{0}"'.format(v)
+                    p.append('{k} = {v}'.format(k=k, v=v))
+            pline = ', '.join(p)
+
+            line = '{n}: {t}, {p}'.format(n=ename, t=etype, p=pline)
+
+            line = line.strip(', ') + ';'
+            lines.append(line)
+
+        dline = '(' + ', '.join(([e['name'] for e in mconfe])) + ')'
+
+        blname = mconf['name']
+        lines.append('{0}: LINE = {1};'.format(blname, dline))
+        lines.append('USE: {0};'.format(blname))
+    except:
+        print("Failed to generate lattice file.")
+        return None
+
+    try:
+        fout = open(latfile, 'w')
+        fout.writelines('\n'.join(lines))
+        fout.close()
+    except:
+        print("Failed to write to %s" % (latfile))
+        return None
+
+    return latfile
 
 
 def get_opt_results(outfile='dakota.out', rtype='dict'):
@@ -720,6 +819,7 @@ def get_opt_results(outfile='dakota.out', rtype='dict'):
         print("Cannot open %s" % (outfile))
         sys.exit(1)
 
+
 def random_string(length=8):
     """ generate random string with given length
 
@@ -728,6 +828,7 @@ def random_string(length=8):
     """
     return ''.join(
         [random.choice(string.letters + string.digits) for _ in range(length)])
+
 
 def test_dakotainput():
     entry_interface = []
