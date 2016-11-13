@@ -21,6 +21,8 @@ import tempfile
 
 from flame import Machine
 import dakutils
+from dakutils import generate_latfile
+#from flamtutils import generate_latfile
 
 
 class DakotaBase(object):
@@ -742,7 +744,7 @@ class DakotaOC(DakotaBase):
         """
         try:
             z, x, y, m = self.get_orbit()
-            rfile = dakutils.generate_latfile(m, latfile=outfile)
+            rfile = generate_latfile(m, latfile=outfile)
         except:
             print("Failed to generate latfile.")
             rfile = None
