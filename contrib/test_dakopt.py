@@ -286,7 +286,7 @@ def demo9():
     #print r
     
     # dump optimized lattice file
-    #outfile = oc_ins.get_opt_latfile('optall.lat')
+    outfile = oc_ins.get_opt_latfile('opt2.lat')
     #oc_ins.get_orbit(outfile='orbit8.dat')
     ## plot
     #oc_ins.plot()
@@ -300,4 +300,5 @@ if __name__ == '__main__':
     #demo5()
     #demo6()
     #demo7()
-    demo8()
+    #demo8()
+    demo9()
