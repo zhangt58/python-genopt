@@ -706,15 +706,15 @@ class DakotaOC(DakotaBase):
                 * evalnum: max function evaulation number, 1000 by default
         """
         if method == 'cg':
-            max_iter_num = 20 if kws.get('iternum') is None else kws.get('iternum')
-            step = 1e-6 if kws.get('step') is None else kws.get('step')
+            max_iter_num = kws.get('iternum', 20)
+            step = kws.get('step', 1e-6)
             md = dakutils.DakotaMethod(method='cg', 
                                        max_iterations=max_iter_num)
             self.set_method(method=md)
             re = dakutils.DakotaResponses(gradient='numerical', step=step)
             self.set_responses(responses=re)
         else: # 'ps'
-            max_eval_num = 1000 if kws.get('evalnum') is None else kws.get('evalnum')
+            max_eval_num = kws.get('evalnum', 1000)
             md = dakutils.DakotaMethod(method='ps', 
                                        max_function_evaluations=max_eval_num)
             self.set_method(method=md)
