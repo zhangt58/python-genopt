@@ -489,7 +489,7 @@ class DakotaResponses(object):
         if self._gradients == 'no_gradients':
             oc_responses.append('no_gradients')
         else:
-            step = self._kws.get('step', 1e-6)
+            step = 1e-6 if self._kws.get('step') is None else self._kws.pop('step')
             grad_dict = self._kws.get('grad') if self._kws.get('grad') is not None else {}
             gradients = self.gradients(type=self._gradients, step=step, **grad_dict)
             oc_responses.extend(gradients)
