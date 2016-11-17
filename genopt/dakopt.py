@@ -22,6 +22,7 @@ import tempfile
 from flame import Machine
 import dakutils
 from dakutils import generate_latfile
+from dakutils import test_one_element
 #from flamtutils import generate_latfile
 
 
@@ -141,6 +142,9 @@ class DakotaOC(DakotaBase):
                  the default one is *dakota*
                * *keep*: if keep the working directory (i.e. defined by *workdir*), 
                  default is False
+
+    .. note:: ``elem_bpm`` should be treated as index of elemnt with type name of 'BPM',
+        however, for the simulation convenience, any element is acceptable, see :func:`set_bpms()`.
     """
 
     def __init__(self,
@@ -294,15 +298,36 @@ class DakotaOC(DakotaBase):
         else:
             self._ref_y0 = ref_arr
     
-    def set_bpms(self, bpm=None):
-        """ set BPMs
+    def set_bpms(self, bpm=None, pseudo_all=False):
+        """ set BPMs, and trying to set reference orbit ``(x,y)`` if ``x`` and ``y``
+        is of one unique value.
 
         :param bpm: list of bpm indices, if None, use all BPMs
+        :param pseudo_all: if set True, will use all elements, ignore ``bpm`` parameter
         """
         if bpm is None:
             self._elem_bpm = self.get_all_bpms()
         else:
             self._elem_bpm = bpm
+            bpm_count = len(bpm)
+       
+        if pseudo_all:
+            self._elem_bpm = "all"
+            bpm_count = len(self._machine)
+
+        try:
+            if test_one_element(self._ref_x0):
+                self.set_ref_x0([self._ref_x0[0]]*bpm_count)
+            else:
+                pass
+            if test_one_element(self._ref_y0):
+                self.set_ref_y0([self._ref_y0[0]]*bpm_count)
+            else:
+                pass
+        except:
+            pass
+            #print("Warning, not set reference orbit, requires 'set_ref_x0()' and 'set_ref_y0()'")
+
 
     def set_cors(self, cor=None, hcor=None, vcor=None):
         """ set correctors, if cor, hcor and vcor are None, use all correctors
@@ -411,6 +436,13 @@ class DakotaOC(DakotaBase):
         """
         retval = self._machine.find(type=type)
         return retval
+
+    def get_all_elem(self):
+        """ get all elements from ``Machine`` object
+
+        :return: list of element indices
+        """
+        return range(len(self._machine))
 
     def gen_dakota_input(self, infile=None, debug=False):
         """ generate dakota input file
@@ -677,9 +709,11 @@ class DakotaOC(DakotaBase):
          for (eid, eval) in zip(idx_y, val_y)]
         s = m.allocState({})
         r = m.propagate(s, 0, len(m), observe=range(len(m)))
-        zpos = np.array([r[i][1].pos for i in self._elem_bpm])
+
+        ob_arr = range(len(m)) if self._elem_bpm == 'all' else self._elem_bpm
+        zpos = np.array([r[i][1].pos for i in ob_arr])
         x, y = np.array(
-            [[r[i][1].moment0_env[j] for i in self._elem_bpm] for j in [0, 2]])
+            [[r[i][1].moment0_env[j] for i in ob_arr] for j in [0, 2]])
 
         if outfile is not None:
             np.savetxt(outfile,

@@ -14,6 +14,7 @@ import os
 import sys
 import random
 import string
+import numpy as np
 from numpy import ndarray
 
 
@@ -235,8 +236,11 @@ class DakotaInterface(object):
         self._latfile = latfile
         self._bpms = bpms
         self._hcors, self._vcors = hcors, vcors
-        self._ref_x0 = [0]*len(bpms) if ref_x0 is None else ref_x0
-        self._ref_y0 = [0]*len(bpms) if ref_y0 is None else ref_y0
+        if bpms is not None and bpms != 'all':
+            self._ref_x0 = [0]*len(bpms) if ref_x0 is None else ref_x0
+            self._ref_y0 = [0]*len(bpms) if ref_y0 is None else ref_y0
+        else:
+            self._ref_x0, self._ref_y0 = ref_x0, ref_y0
         self._ref_flag = "xy" if ref_flag is None else ref_flag
         self._kws = kws
         for k in kws:
@@ -331,8 +335,12 @@ class DakotaInterface(object):
         :param rtype: 'list' or 'string'
         :return: dakota interface input
         """
-        bpms = "'" + ' '.join(
-            ['{0}'.format(i) for i in self._bpms]) + "'"
+        if self._bpms != 'all':
+            bpms = "'" + ' '.join(
+                ['{0}'.format(i) for i in self._bpms]) + "'"
+        else:  # pseudo_all is True
+            bpms = self._bpms
+        
         hcors = "'" + ' '.join(
             ['{0}'.format(i) for i in self._hcors]) + "'"
         vcors = "'" + ' '.join(
@@ -830,6 +838,16 @@ def random_string(length=8):
         [random.choice(string.letters + string.digits) for _ in range(length)])
 
 
+def test_one_element(x):
+    """ test if all the elements are the same
+
+    :param x: list, tuple, or numpy array
+    :return: True if all are the same, else False
+    """
+    retval = np.alltrue(np.array(x) == np.ones(len(x))*x[0])
+    return retval
+
+
 def test_dakotainput():
     entry_interface = []
     entry_interface.append('fork')
@@ -908,6 +926,19 @@ def test_dakotainterface():
     print oc_interface
     print oc_interface.get_config()
 
+    bpms = range(1242) # just for demonstration
+    hcors, vcors = range(1242)[0:-1:2], range(1242)[1:-1:2]
+    latfile = 'test.lat'
+    oc_interface = DakotaInterface(mode='fork', latfile=latfile,
+                                   driver='flamedriver_oc',
+                                   bpms=bpms, hcors=hcors, vcors=vcors,
+                                   deactivate='active_set_vector')
+    oc_interface.set_extra(p1='k1', p2='k2')
+    oc_interface.set_extra(p1='kk1', p3='kk3')
+    print oc_interface
+    print oc_interface.get_config()[1]
+
+
 def test_dakotamodel():
     oc_model = DakotaModel()
     print oc_model
@@ -958,9 +989,9 @@ if __name__ == '__main__':
     #test_dakotainput()
     #test_get_opt_results()
     #test_dakotaparam()
-    #test_dakotainterface()
+    test_dakotainterface()
     #test_dakotamodel()
-    test_dakotaresponses()
+    #test_dakotaresponses()
     #test_dakotamethod()
     #test_dakotaenviron()
     

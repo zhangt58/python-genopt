@@ -273,11 +273,14 @@ def demo9():
     lattice_dir = "../lattice"
     latname = 'test_392.lat'
     latfile = os.path.join(lattice_dir, latname)
-    oc_ins = genopt.DakotaOC(lat_file=latfile)
+    oc_ins = genopt.DakotaOC(lat_file=latfile, workdir='oc_tmp8', keep=True)
 
     hcors = oc_ins.get_all_cors(type='h')
     vcors = oc_ins.get_all_cors(type='v')
     oc_ins.set_cors(hcor=hcors, vcor=vcors)
+
+    bpms = oc_ins.get_elem_by_type('bpm')
+    oc_ins.set_bpms(bpm=bpms, pseudo_all=True)
 
     oc_ins.simple_run(method='cg', mpi=True, np=4, iternum=20)
     
@@ -286,10 +289,10 @@ def demo9():
     #print r
     
     # dump optimized lattice file
-    outfile = oc_ins.get_opt_latfile('opt2.lat')
-    #oc_ins.get_orbit(outfile='orbit8.dat')
+    outfile = oc_ins.get_opt_latfile('opt6_2.lat')
+    oc_ins.get_orbit(outfile='orbit8.dat')
     ## plot
-    #oc_ins.plot()
+    oc_ins.plot()
 
 
 if __name__ == '__main__':
