@@ -765,9 +765,12 @@ def generate_latfile(machine, latfile='out.lat'):
         return None
 
     try:
-        fout = open(latfile, 'w')
-        fout.writelines('\n'.join(lines))
-        fout.close()
+        if latfile != sys.stdout:
+            fout = open(latfile, 'w')
+            fout.writelines('\n'.join(lines))
+            fout.close()
+        else:
+            sys.stdout.writelines('\n'.join(lines))
     except:
         print("Failed to write to %s" % (latfile))
         return None
