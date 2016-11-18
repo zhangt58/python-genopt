@@ -581,11 +581,12 @@ class DakotaOC(DakotaBase):
             oc_method = method
         self._oc_method = oc_method.get_config()
 
-    def run(self, mpi=False, np=None):
+    def run(self, mpi=False, np=None, echo=True):
         """ run optimization
 
         :param mpi: if True, run DAKOTA in parallel mode, False by default
         :param np: number of processes to use, only valid when ``mpi`` is True 
+        :param echo: suppress output if False, True by default
         """
         if mpi:
             max_core_num = multiprocessing.cpu_count()
@@ -601,7 +602,11 @@ class DakotaOC(DakotaBase):
                 dakexec=self._dakexec,
                 dakin=self._dakin,
                 dakout=self._dakout)
-        subprocess.call(run_command.split())
+        if echo:
+            subprocess.call(run_command.split())
+        else:
+            devnull = open(os.devnull, 'w')
+            subprocess.call(run_command.split(), stdout=devnull)
 
     def get_opt_results(self, outfile=None, rtype='dict', label='plain'):
         """ extract optimized results from dakota output
@@ -726,13 +731,14 @@ class DakotaOC(DakotaBase):
 
         return zpos, x, y, m
 
-    def simple_run(self, method='cg', mpi=None, np=None, **kws):
+    def simple_run(self, method='cg', mpi=None, np=None, echo=True, **kws):
         """ run optimization after ``set_bpms()`` and ``set_cors()``,
         by using default configuration and make full use of computing resources.
 
         :param method: optimization method, 'cg', 'ps', 'cg' by default
         :param mpi: if True, run DAKOTA in parallel mode, False by default
         :param np: number of processes to use, only valid when ``mpi`` is True 
+        :param echo: suppress output if False, True by default
         :param kws: keyword parameters
             valid keys:
                 * step: gradient step, 1e-6 by default
@@ -764,9 +770,9 @@ class DakotaOC(DakotaBase):
             max_core_num = multiprocessing.cpu_count()
             if np is None or int(np) > max_core_num:
                 np = max_core_num
-            self.run(mpi=mpi, np=np)
+            self.run(mpi=mpi, np=np, echo=echo)
         else:
-            self.run()
+            self.run(echo=echo)
 
     def get_opt_latfile(self, outfile='out.lat'):
         """ get optimized lattice file for potential next usage,
