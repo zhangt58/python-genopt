@@ -273,7 +273,10 @@ def demo9():
     lattice_dir = "../lattice"
     latname = 'test_392.lat'
     latfile = os.path.join(lattice_dir, latname)
-    oc_ins = genopt.DakotaOC(lat_file=latfile, workdir='oc_tmp8', keep=True)
+    
+    latfile = "/home/tong1/work/FRIB/projects/flame_github/python/flame/test/LS1.lat"
+
+    oc_ins = genopt.DakotaOC(lat_file=latfile, workdir='oc_tmp9', keep=True)
 
     hcors = oc_ins.get_all_cors(type='h')
     vcors = oc_ins.get_all_cors(type='v')
