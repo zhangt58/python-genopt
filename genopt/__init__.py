@@ -8,7 +8,10 @@ from .dakutils import DakotaEnviron
 from .dakutils import get_opt_results
 from .dakopt   import DakotaBase, DakotaOC
 
-__version__ = "0.0.2"
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
 __author__ = "Tong Zhang"
 
 __doc__ = """General multi-dimensional optimization package built by Python,
