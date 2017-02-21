@@ -21,9 +21,12 @@ import tempfile
 
 from flame import Machine
 import dakutils
-from dakutils import generate_latfile
 from dakutils import test_one_element
-#from flamtutils import generate_latfile
+
+try:
+    from phantasy.library.model import generate_latfile
+except:
+    from dakutils import generate_latfile
 
 
 class DakotaBase(object):
