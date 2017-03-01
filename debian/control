@@ -14,7 +14,7 @@ Vcs-Browser: https://stash.frib.msu.edu/projects/PHYAPP/repos/genopt/browse
 Package: python-genopt
 Architecture: any
 Depends: ${python:Depends}, ${misc:Depends}, dakota-drivers
-Suggests: python-genopt-doc
+#Suggests: python-genopt-doc
 Description: Python module to do multi-dimensional optimization (Python 2)
  Use dakota as the core optimization engine, as well as dakota-drivers
  built with flame accelerator modeling library, to do various complex
@@ -29,9 +29,9 @@ Description: Python module to do multi-dimensional optimization (Python 2)
 # .
 # This package installs the library for Python 3.
 
-Package: python-genopt-doc
-Architecture: all
-Section: doc
-Depends: ${sphinxdoc:Depends}, ${misc:Depends}
-Description: Documentation of python-genopt
+#Package: python-genopt-doc
+#Architecture: all
+#Section: doc
+#Depends: ${sphinxdoc:Depends}, ${misc:Depends}
+#Description: Documentation of python-genopt
 
