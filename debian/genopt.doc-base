@@ -1,0 +1,20 @@
+Document: genopt
+Title: Debian genopt Manual
+Author: Tong Zhang <zhangt@frib.msu.edu>
+Abstract: This manual describes what genopt is
+ and how it can be used to
+ manage online manuals on Debian systems.
+Section: science
+
+Format: debiandoc-sgml
+Files: /usr/share/doc/genopt/genopt.sgml.gz
+
+Format: postscript
+Files: /usr/share/doc/genopt/genopt.ps.gz
+
+Format: text
+Files: /usr/share/doc/genopt/genopt.text.gz
+
+Format: HTML
+Index: /usr/share/doc/genopt/html/index.html
+Files: /usr/share/doc/genopt/html/*.html
