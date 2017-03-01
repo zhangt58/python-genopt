@@ -1,0 +1,346 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>After optimization &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/frib-favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="genopt 0.1.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Demonstrations" href="../demos.html"/>
+        <link rel="next" title="API" href="../apidoc.html"/>
+        <link rel="prev" title="Run optimization" href="demo5.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../demos.html">Demonstrations</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo1.html">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo2.html">Setup BPMs, correctors and reference orbit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo3.html">Setup variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo4.html">Setup optimization engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo5.html">Run optimization</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">After optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#get-optimized-results">Get optimized results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-orbit-data">Get orbit data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-new-optimized-lattice-file">Get new optimized lattice file</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">genopt</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../demos.html">Demonstrations</a> &raquo;</li>
+      
+    <li>After optimization</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="after-optimization">
+<h1>After optimization<a class="headerlink" href="#after-optimization" title="Permalink to this headline">¶</a></h1>
+<p>Suppose all the optimized results have been generated, here are the
+possible post-operations:</p>
+<ol class="arabic simple">
+<li>Operations on the optimized <code class="docutils literal"><span class="pre">Machine</span></code> object;</li>
+<li>Generate new lattice file with optimized results for other programs.</li>
+</ol>
+<p><strong>Optimization snippet:</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">latfile</span> <span class="o">=</span> <span class="s1">&#39;test_392.lat&#39;</span>
+<span class="n">oc</span> <span class="o">=</span> <span class="n">genopt</span><span class="o">.</span><span class="n">DakotaOC</span><span class="p">(</span><span class="n">lat_file</span><span class="o">=</span><span class="n">latfile</span><span class="p">)</span>
+<span class="n">oc</span><span class="o">.</span><span class="n">simple_run</span><span class="p">(</span><span class="n">iternum</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="get-optimized-results">
+<h2>Get optimized results<a class="headerlink" href="#get-optimized-results" title="Permalink to this headline">¶</a></h2>
+<p>Optimized results could be retrieved by <code class="docutils literal"><span class="pre">get_opt_results()</span></code> method of
+<code class="docutils literal"><span class="pre">DakotaOC</span></code> class:</p>
+<ul class="simple">
+<li>return type: list</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">(</span><span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="go">[0.00013981587907,</span>
+<span class="go"> 7.5578423135e-05,</span>
+<span class="go"> -5.3982438406e-05,</span>
+<span class="go"> -1.9620020032e-06,</span>
+<span class="go"> 0.00017942079806,</span>
+<span class="go"> ...</span>
+<span class="go"> 2.0182502319e-05,</span>
+<span class="go"> 0.0001173634281,</span>
+<span class="go"> 8.685656753e-05,</span>
+<span class="go"> 7.3950720611e-05,</span>
+<span class="go"> 8.2924283647e-05]</span>
+</pre></div>
+</div>
+<p>The returned list is alphabetically sorted according to the
+variables&#8217; names.</p>
+<ul class="simple">
+<li>return type: dictionary, label format: <code class="docutils literal"><span class="pre">plain</span></code></li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># or</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">(</span><span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="go">{&#39;x001&#39;: 0.00013981587907,</span>
+<span class="go"> &#39;x002&#39;: 7.5578423135e-05,</span>
+<span class="go"> &#39;x003&#39;: -5.3982438406e-05,</span>
+<span class="go"> &#39;x004&#39;: -1.9620020032e-06,</span>
+<span class="go"> &#39;x005&#39;: 0.00017942079806,</span>
+<span class="go"> ...</span>
+<span class="go"> &#39;y056&#39;: 2.0182502319e-05,</span>
+<span class="go"> &#39;y057&#39;: 0.0001173634281,</span>
+<span class="go"> &#39;y058&#39;: 8.685656753e-05,</span>
+<span class="go"> &#39;y059&#39;: 7.3950720611e-05,</span>
+<span class="go"> &#39;y060&#39;: 8.2924283647e-05}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>return type: dictionary, label format: <code class="docutils literal"><span class="pre">fancy</span></code></li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;fancy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="go">{&#39;FS1_BBS:DCH_D2412&#39;: {&#39;config&#39;: {&#39;theta_x&#39;: 0.00021066533055}, &#39;id&#39;: 1048},</span>
+<span class="go"> &#39;FS1_BBS:DCH_D2476&#39;: {&#39;config&#39;: {&#39;theta_x&#39;: 0.00025833402592}, &#39;id&#39;: 1098},</span>
+<span class="go"> ...</span>
+</pre></div>
+</div>
+<p>This is the more comprehensive way to represent the results, one of the
+advantages is that results with this format could be easily to apply on to
+<code class="docutils literal"><span class="pre">reconfigure</span></code> method of <code class="docutils literal"><span class="pre">Machine</span></code> object, for instance:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">r</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">m</span><span class="o">.</span><span class="n">reconfigure</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal"><span class="pre">get_opt_results</span></code> has <code class="docutils literal"><span class="pre">outfile</span></code> optional parameter, if not
+defined, output file that generated by current optimization
+instance would be used, or the defined dakota output file would be used,
+but only valid for cases of <code class="docutils literal"><span class="pre">label='plain'</span></code>;
+<code class="docutils literal"><span class="pre">label='fancy'</span></code> is only valid for
+the case of <code class="docutils literal"><span class="pre">rtype='dict'</span></code>.</p>
+</div>
+</div>
+<div class="section" id="get-orbit-data">
+<h2>Get orbit data<a class="headerlink" href="#get-orbit-data" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">get_orbit()</span></code> could be used to apply all the optimized results, then
+new <code class="docutils literal"><span class="pre">Machine</span></code> could be get in the following way:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">z</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">m</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_orbit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="mi">1224</span><span class="p">)[</span><span class="s1">&#39;theta_x&#39;</span><span class="p">])</span>
+<span class="go">8.5216269467e-05</span>
+</pre></div>
+</div>
+<p>Or in another way:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span><span class="o">.</span><span class="n">get_orbit</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">oc</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>New machine <code class="docutils literal"><span class="pre">m</span></code> could be used for the next operations.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal"><span class="pre">get_orbit()</span></code>  could be assigned a optional parameter: <code class="docutils literal"><span class="pre">outfile</span></code>,
+into which the plain ASCII data of <code class="docutils literal"><span class="pre">zpos</span></code>, <code class="docutils literal"><span class="pre">x</span></code>, and <code class="docutils literal"><span class="pre">y</span></code> would
+be saved.</p>
+</div>
+</div>
+<div class="section" id="get-new-optimized-lattice-file">
+<h2>Get new optimized lattice file<a class="headerlink" href="#get-new-optimized-lattice-file" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal"><span class="pre">get_opt_latfile()</span></code> is created to generate new lattice file with
+optimized results, for the sake of possible next usage of asking for
+lattice file, this is kind of more general interface.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oc</span><span class="o">.</span><span class="n">get_opt_latfile</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;opt1.lat&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here is the links to the lattice files of
+<a class="reference download internal" href="../../_downloads/test_392.lat" download=""><code class="xref download docutils literal"><span class="pre">original</span></code></a> and
+<a class="reference download internal" href="../../_downloads/opt1.lat" download=""><code class="xref download docutils literal"><span class="pre">optimized</span></code></a> ones, both could be
+used as the input lattice file of <code class="docutils literal"><span class="pre">flame</span></code> program.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><a class="reference internal" href="../apidocs/dakutils.html#genopt.dakutils.generate_latfile" title="genopt.dakutils.generate_latfile"><code class="xref py py-func docutils literal"><span class="pre">generate_latfile()</span></code></a>
+in module <code class="docutils literal"><span class="pre">genopt.dakutils</span></code>
+could be used to generate lattice file from <code class="docutils literal"><span class="pre">flame.Machine</span></code> object.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../apidoc.html" class="btn btn-neutral float-right" title="API" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="demo5.html" class="btn btn-neutral" title="Run optimization" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Feb 06, 2017.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

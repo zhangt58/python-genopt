@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Getting started &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/frib-favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="genopt 0.1.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Demonstrations" href="../demos.html"/>
+        <link rel="next" title="Setup BPMs, correctors and reference orbit" href="demo2.html"/>
+        <link rel="prev" title="Demonstrations" href="../demos.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../demos.html">Demonstrations</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo2.html">Setup BPMs, correctors and reference orbit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo3.html">Setup variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo4.html">Setup optimization engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo5.html">Run optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo6.html">After optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">genopt</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../demos.html">Demonstrations</a> &raquo;</li>
+      
+    <li>Getting started</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="getting-started">
+<span id="simplest-approach"></span><h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>This approach requires fewest input of code to complete the orbit
+correction optimization task, which also means you only has very few
+options to adjust to the optimization model. Hopefully, this approach
+could be used as an ordinary template to fulfill most of the orbit
+correction tasks. Below is the demo code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">genopt</span>
+
+<span class="n">latfile</span> <span class="o">=</span> <span class="s1">&#39;test_392.lat&#39;</span>
+<span class="n">oc_ins</span> <span class="o">=</span> <span class="n">genopt</span><span class="o">.</span><span class="n">DakotaOC</span><span class="p">(</span><span class="n">lat_file</span><span class="o">=</span><span class="n">latfile</span><span class="p">)</span>
+
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">simple_run</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="n">mpi</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">iternum</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="c1"># get output</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">get_orbit</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;orbit.dat&#39;</span><span class="p">)</span>
+
+<span class="c1"># plot</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The lattice file used here could be found from
+<a class="reference download internal" href="../../_downloads/test_392.lat" download=""><code class="xref download docutils literal"><span class="pre">here</span></code></a>, or from <a class="reference external" href="https://github.com/archman/genopt/blob/master/lattice/test_392.lat">https://github.com/archman/genopt/blob/master/lattice/test_392.lat</a>.</p>
+<p>For this approach, the following default configuration is applied:</p>
+<ol class="arabic simple">
+<li>Selected all BPMs and correctors (both horizontal and vertical types);</li>
+<li>Set the reference orbit with all BPMs&#8217; readings of <code class="docutils literal"><span class="pre">x=0</span></code> and <code class="docutils literal"><span class="pre">y=0</span></code>;</li>
+<li>Set the objective function with the sum of all the square of orbit deviations w.r.t. reference orbit.</li>
+</ol>
+<p>By default, <code class="docutils literal"><span class="pre">conmin_frcg</span></code> optimization method is used, possible options
+for <code class="docutils literal"><span class="pre">simple_run()</span></code> could be:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>common options:</dt>
+<dd><ol class="first last arabic simple">
+<li><code class="docutils literal"><span class="pre">mpi</span></code>: if True, run in parallel mode; if False, run in serial mode;</li>
+<li><code class="docutils literal"><span class="pre">np</span></code>: number of cores to use if <code class="docutils literal"><span class="pre">mpi</span></code> is True;</li>
+<li><code class="docutils literal"><span class="pre">echo</span></code>: if False, will not generate output when optimizing, the same for <code class="xref py py-func docutils literal"><span class="pre">run()</span></code>;</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>gradient descent, i.e. <code class="docutils literal"><span class="pre">method=cg</span></code>:</dt>
+<dd><ol class="first last arabic simple">
+<li><code class="docutils literal"><span class="pre">iternum</span></code>: max iteration number, 20 by default;</li>
+<li><code class="docutils literal"><span class="pre">step</span></code>: forward gradient step size, 1e-6 by default;</li>
+</ol>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>pattern search, i.e. <code class="docutils literal"><span class="pre">method=ps</span></code>:</dt>
+<dd><ol class="first last arabic simple">
+<li><code class="docutils literal"><span class="pre">iternum</span></code>: max iteration number, 20 by default;</li>
+<li><code class="docutils literal"><span class="pre">evalnum</span></code>: max function evaulation number, 1000 by default;</li>
+</ol>
+</dd>
+</dl>
+</li>
+</ul>
+<p>There are two options for <code class="docutils literal"><span class="pre">DakotaOC</span></code> maybe useful sometimes:</p>
+<ol class="arabic simple">
+<li><code class="docutils literal"><span class="pre">workdir</span></code>: root directory for dakota input and output files</li>
+<li><code class="docutils literal"><span class="pre">keep</span></code>: if keep working files, True or False</li>
+</ol>
+<p>After run this script, beam orbit data could be saved into file, e.g.
+<a class="reference download internal" href="../../_downloads/orbit.dat" download=""><code class="xref download docutils literal"><span class="pre">orbit.dat</span></code></a>:</p>
+<p>which could be used to generate figures, the following figure is a typical
+one could be generated from the optimized results:</p>
+<a class="reference internal image-reference" href="../../_images/oc_x0y0.png"><img alt="../../_images/oc_x0y0.png" class="align-center" src="../../_images/oc_x0y0.png" style="width: 500px;" /></a>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="demo2.html" class="btn btn-neutral float-right" title="Setup BPMs, correctors and reference orbit" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../demos.html" class="btn btn-neutral" title="Demonstrations" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Feb 06, 2017.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

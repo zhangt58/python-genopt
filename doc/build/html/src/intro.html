@@ -1,0 +1,234 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Introduction &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../_static/frib-favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="genopt 0.1.0 documentation" href="../index.html"/>
+        <link rel="next" title="Demonstrations" href="demos.html"/>
+        <link rel="prev" title="Welcome to genopt’s documentation!" href="../index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demos.html">Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">genopt</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal"><span class="pre">genopt</span></code> is a python package, trying to serve as a solution of general
+multi-dimensional optimization. The core optimization algorithms employed
+inside are mainly provided by <code class="docutils literal"><span class="pre">DAKOTA</span></code>, which is the brief for
+<em>Design Analysis Kit for Optimization and Terascale Applications</em>,
+another tool written in C++.</p>
+<p>The following image illustrates the general optimization framework
+by properly utilizing <code class="docutils literal"><span class="pre">DAKOTA</span></code>.</p>
+<a class="reference internal image-reference" href="../_images/dakota-sys-workflow_2.png"><img alt="../_images/dakota-sys-workflow_2.png" class="align-center" src="../_images/dakota-sys-workflow_2.png" style="width: 600px;" /></a>
+<p>To apply this optimization framework, specific <code class="docutils literal"><span class="pre">analysis</span> <span class="pre">drivers</span></code> should
+be created first, e.g. <code class="docutils literal"><span class="pre">flamedriver1</span></code>, <code class="docutils literal"><span class="pre">flamedriver2</span></code>... indicate the
+dedicated executable drivers built from C++, for the application in
+accelerator commissioning, e.g. FRIB.</p>
+<a class="reference internal image-reference" href="../_images/dakota-genopt-framework.png"><img alt="../_images/dakota-genopt-framework.png" class="align-center" src="../_images/dakota-genopt-framework.png" style="width: 600px;" /></a>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal"><span class="pre">flame</span></code> is an particle envolope tracking code developed by C++,
+with the capbility of multi-charge particle states momentum space
+tracking, it is developed by FRIB; <code class="docutils literal"><span class="pre">flamedriver(s)</span></code> are
+user-customized executables by linking the flame core library
+(<code class="docutils literal"><span class="pre">libflame_core.so</span></code>) to accomplish various different requirements.</p>
+</div>
+<p>The intention of <code class="docutils literal"><span class="pre">genopt</span></code> is to provide a uniform interface to do the
+multi-dimensional optimization tasks. It provides interfaces to let the
+users to customize the optimization drivers, optimization methods,
+variables, etc. The optimized results are returned by clean interface.
+Dedicated analysis drivers should be created and tell the package to use.
+<code class="docutils literal"><span class="pre">DakotaOC</span></code> is a dedicated class designed for orbit correction for
+accelerator, which uses <code class="docutils literal"><span class="pre">flame</span></code> as the modeling tool.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="demos.html" class="btn btn-neutral float-right" title="Demonstrations" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../index.html" class="btn btn-neutral" title="Welcome to genopt’s documentation!" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Feb 06, 2017.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

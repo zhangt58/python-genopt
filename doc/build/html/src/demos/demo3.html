@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Setup variables &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/frib-favicon.ico"/>
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="genopt 0.1.0 documentation" href="../../index.html"/>
+        <link rel="up" title="Demonstrations" href="../demos.html"/>
+        <link rel="next" title="Setup optimization engine" href="demo4.html"/>
+        <link rel="prev" title="Setup BPMs, correctors and reference orbit" href="demo2.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../demos.html">Demonstrations</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo1.html">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo2.html">Setup BPMs, correctors and reference orbit</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Setup variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo4.html">Setup optimization engine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo5.html">Run optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo6.html">After optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">genopt</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../demos.html">Demonstrations</a> &raquo;</li>
+      
+    <li>Setup variables</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="setup-variables">
+<h1>Setup variables<a class="headerlink" href="#setup-variables" title="Permalink to this headline">¶</a></h1>
+<p>By default the variables to be optimized is setup with the following
+parameters:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="35%" />
+<col width="31%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">initial value</th>
+<th class="head">lower bound</th>
+<th class="head">upper bound</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>1e-4</td>
+<td>-0.01</td>
+<td>0.01</td>
+</tr>
+</tbody>
+</table>
+<p>However, subtle configuration could be achieved by using <code class="docutils literal"><span class="pre">set_variables()</span></code>
+method of <code class="docutils literal"><span class="pre">DakotaOc</span></code> class, here is how to do it:</p>
+<p>Parameter could be created by using <code class="docutils literal"><span class="pre">DakotaParam</span></code> class, here is the code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># set x correctors</span>
+<span class="n">hcors</span> <span class="o">=</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_all_cors</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">40</span><span class="p">]</span>
+
+<span class="c1"># set initial, lower, upper values for each variables</span>
+<span class="n">n_h</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hcors</span><span class="p">)</span>
+<span class="n">xinit_vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n_h</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0e-4</span>
+<span class="n">xlower_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_h</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="n">xupper_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_h</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.01</span>
+<span class="hll"><span class="n">xlbls</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;X{0:03d}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_h</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+</span>
+<span class="c1"># create parameters</span>
+<span class="n">plist_x</span> <span class="o">=</span> <span class="p">[</span><span class="n">genopt</span><span class="o">.</span><span class="n">DakotaParam</span><span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">val_i</span><span class="p">,</span> <span class="n">val_l</span><span class="p">,</span> <span class="n">val_u</span><span class="p">)</span> 
+            <span class="k">for</span> <span class="p">(</span><span class="n">lbl</span><span class="p">,</span> <span class="n">val_i</span><span class="p">,</span> <span class="n">val_l</span><span class="p">,</span> <span class="n">val_u</span><span class="p">)</span> <span class="ow">in</span> 
+                <span class="nb">zip</span><span class="p">(</span><span class="n">xlbls</span><span class="p">,</span> <span class="n">xinit_vals</span><span class="p">,</span> <span class="n">xlower_vals</span><span class="p">,</span> <span class="n">xupper_vals</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">plist_y</span></code> could be created in the same way, then issue <code class="docutils literal"><span class="pre">set_variables()</span></code>
+with <code class="docutils literal"><span class="pre">set_variables(plist=plist_x+plist_y)</span></code>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The emphasized line is to setup the variable labels, it is recommended
+that all parameters&#8217; label with the format like <code class="docutils literal"><span class="pre">x001</span></code>, <code class="docutils literal"><span class="pre">x002</span></code>, etc.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="demo4.html" class="btn btn-neutral float-right" title="Setup optimization engine" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="demo2.html" class="btn btn-neutral" title="Setup BPMs, correctors and reference orbit" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Feb 06, 2017.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
