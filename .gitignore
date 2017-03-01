@@ -1,0 +1,3 @@
+dist/
+deb_dist/
+*.pyc
