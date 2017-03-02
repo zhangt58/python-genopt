@@ -1,4 +1,4 @@
-Source: genopt
+Source: python-genopt
 Section: science
 Priority: optional
 Maintainer: Tong Zhang <zhangt@frib.msu.edu>
@@ -8,8 +8,8 @@ Standards-Version: 3.9.7
 Homepage: https://controls.frib.msu.edu/genopt/
 X-Python-Version: >= 2.6
 #X-Python3-Version: >= 3.2
-Vcs-Git: https://zhangt@stash.frib.msu.edu/scm/phyapp/genopt.git
-Vcs-Browser: https://stash.frib.msu.edu/projects/PHYAPP/repos/genopt/browse
+Vcs-Git: https://stash.frib.msu.edu/scm/phyapp/python-genopt.git
+Vcs-Browser: https://stash.frib.msu.edu/projects/PHYAPP/repos/python-genopt/browse
 
 Package: python-genopt
 Architecture: any
