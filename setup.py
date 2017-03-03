@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-import versioneer
 import os
 
 def readme():
@@ -10,8 +9,7 @@ requiredpackages = ['numpy', 'matplotlib']#, 'flame']
 
 setup(
         name = "genopt",
-        version = versioneer.get_version(),
-        cmdclass = versioneer.get_cmdclass(),
+        version = "0.1.0"
         description = "General multi-dimensional optimization package",
         long_description = readme() + '\n\n',
         author = "Tong Zhang",

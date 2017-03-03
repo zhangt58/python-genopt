@@ -1,2 +1,0 @@
-include versioneer.py
-include genopt/_version.py
