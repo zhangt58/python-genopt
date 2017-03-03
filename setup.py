@@ -9,7 +9,7 @@ requiredpackages = ['numpy', 'matplotlib']#, 'flame']
 
 setup(
         name = "genopt",
-        version = "0.1.0"
+        version = "0.1.0",
         description = "General multi-dimensional optimization package",
         long_description = readme() + '\n\n',
         author = "Tong Zhang",
