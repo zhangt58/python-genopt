@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Tong Zhang <zhangt@frib.msu.edu>
 Build-Depends: debhelper (>=9), dh-python, python-all (>= 2.6.6-3~), 
                python-setuptools, python-pydakota
-Standards-Version: 3.9.7
+Standards-Version: 3.9.6
 Homepage: https://controls.frib.msu.edu/genopt/
 X-Python-Version: >= 2.6
 #X-Python3-Version: >= 3.2
