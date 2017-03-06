@@ -1,4 +1,0 @@
-setup variables
-[ ] add more simple approach to simple_run(),
-    [ ] initial value, upper/lower bounds, etc.
-[ ] start optimization from last optimized case
