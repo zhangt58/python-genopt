@@ -1,3 +1,9 @@
+python-genopt (0.1.0-2) unstable; urgency=medium
+
+  * Fix - debian section.
+
+ -- Tong Zhang <zhangt@frib.msu.edu>  Wed, 10 May 2017 14:32:16 -0400
+
 python-genopt (0.1.0-1) unstable; urgency=medium
 
   * Initial release
