@@ -30,16 +30,22 @@ except:
 
 
 class DakotaBase(object):
-    """ Base class for general optimization, initialized parameters:
-        valid keyword parameters:
+    """Base class for general optimization, initialized parameters.
 
-        * workdir: root dir for dakota input/output files,
-          the defualt one should be created in /tmp, or define some dir path
-        * dakexec: full path of dakota executable,
-          the default one should be *dakota*, or define the full path
-        * dakhead: prefixed name for input/output files of *dakota*, 
-          the default one is *dakota*
-        * keep: if keep the working directory (i.e. defined by *workdir*), default is False
+    Keyword Arguments
+    -----------------
+    workdir : str
+        Root dir for dakota input/output files, the defualt one should be
+        created in /tmp, or define some dir path.
+    dakexec : str
+        Full path of dakota executable, the default one should be *dakota*,
+        or define the full path.
+    dakhead : str
+        Prefixed name for input/output files of *dakota*, the default one is
+        *dakota*.
+    keep : bool
+        If keep the working directory (i.e. defined by *workdir*), default is
+        False.
     """
 
     def __init__(self, **kws):
@@ -118,38 +124,56 @@ class DakotaBase(object):
         
 
 class DakotaOC(DakotaBase):
-    """ Dakota optimization class with orbit correction driver
+    """Dakota optimization class with orbit correction driver.
 
-    :param lat_file: lattice file
-    :param elem_bpm: list of element indice of BPMs
-    :param elem_cor: list of element indice of correctors, always folders of 2
-    :param elem_hcor: list of element indice of horizontal correctors
-    :param elem_vcor: list of element indice of vertical correctors
-    :param ref_x0: reference orbit in x, list of BPM readings
-    :param ref_y0: reference orbit in y, list of BPM readings
-    :param ref_flag: string flag for objective functions:
+    Parameters
+    ----------
+    lat_file : str
+        Lattice file name.
+    elem_bpm : list(int)
+        List of element indice of BPMs.
+    elem_cor : list(int)
+        List of element indice of correctors, always folders of 2.
+    elem_hcor : list(int)
+        List of element indice of horizontal correctors.
+    elem_vcor : list(int)
+        List of element indice of vertical correctors.
+    ref_x0 : list(float)
+        Reference orbit in x, list of BPM readings.
+    ref_y0 : list(float)
+        Reference orbit in y, list of BPM readings.
+    ref_flag : str
+        String flag for objective functions:
 
-           1. "x": :math:`\sum \Delta x^2`, :math:`\Delta x = x-x_0`;
-           2. "y": :math:`\sum \Delta y^2`, :math:`\Delta y = y-y_0`;
-           3. "xy": :math:`\sum \Delta x^2 + \sum \Delta y^2`.
+        - ``x``: :math:`\sum \Delta x^2`, :math:`\Delta x = x-x_0`;
+        - ``y``: :math:`\sum \Delta y^2`, :math:`\Delta y = y-y_0`;
+        - ``xy``: :math:`\sum \Delta x^2 + \sum \Delta y^2`.
+    model : str
+        Simulation model, 'flame' or 'impact'.
+    optdriver : str
+        Analysis driver for optimization, 'flamedriver_oc' by default.
 
-    :param model: simulation model, 'flame' or 'impact'
-    :param optdriver: analysis driver for optimization, 'flamedriver_oc' by default
-    :param kws: keywords parameters for additional usage, defined in ``DakotaBase`` class
-                valid keys:
-               * *workdir*: root dir for dakota input/output files,
-                 the defualt one should be created in /tmp, or define some dir path
-               * *dakexec*: full path of dakota executable,
-                 the default one should be *dakota*, or define the full path
-               * *dakhead*: prefixed name for input/output files of *dakota*, 
-                 the default one is *dakota*
-               * *keep*: if keep the working directory (i.e. defined by *workdir*), 
-                 default is False
+    Keyword Arguments
+    -----------------
+    workdir : str
+        Root dir for dakota input/output files, the defualt one should be
+        created in /tmp, or define some dir path.
+    dakexec : str
+        Full path of dakota executable, the default one should be *dakota*,
+        or define the full path.
+    dakhead : str
+        Prefixed name for input/output files of *dakota*, the default one is
+        *dakota*.
+    keep : bool
+        If keep the working directory (i.e. defined by *workdir*), default is
+        False.
 
-    .. note:: ``elem_bpm`` should be treated as index of elemnt with type name of 'BPM',
-        however, for the simulation convenience, any element is acceptable, see :func:`set_bpms()`.
+    Note
+    ----
+    ``elem_bpm`` should be treated as index of elemnt with type name of 'BPM',
+    however, for the simulation convenience, any element is acceptable,
+    see :func:`set_bpms()`.
     """
-
     def __init__(self,
                  lat_file=None,
                  elem_bpm=None,
@@ -218,7 +242,7 @@ class DakotaOC(DakotaBase):
         return self._ref_y0
 
     @property
-    def ref_flag(sef):
+    def ref_flag(self):
         return self._ref_flag
 
     @ref_flag.setter
@@ -666,12 +690,19 @@ class DakotaOC(DakotaBase):
                 ky = [self._machine.conf(i)['name'] for i in self._elem_vcor]
                 return dict(zip(kx+ky, vx+vy))
 
-    def plot(self, outfile=None, figsize=(10, 8), dpi=120, **kws):
-        """ show orbit
+    def plot(self, outfile=None, figsize=(10, 8), dpi=90, fontsize=16, **kws):
+        """Show orbit.
 
-        :param outfile: output file of dakota
-        :param figsize: figure size, (h, w)
-        :param dpi: figure dpi
+        Parameters
+        ----------
+        outfile : str
+            Output file of dakota.
+        figsize : tuple
+            Figure size, ``(h, w)``.
+        dpi : int
+            Figure dpi.
+        fontsize : int
+            Label font size.
         """
         if outfile is None:
             opt_vars = self.get_opt_results()
@@ -685,8 +716,8 @@ class DakotaOC(DakotaBase):
         ax = fig.add_subplot(111)
         linex, = ax.plot(zpos, x, 'r-', label='$x$', lw=2)
         liney, = ax.plot(zpos, y, 'b-', label='$y$', lw=2)
-        ax.set_xlabel('$z\,\mathrm{[m]}$', fontsize=20)
-        ax.set_ylabel('$\mathrm{Orbit\;[mm]}$', fontsize=20)
+        ax.set_xlabel('$z\,\mathrm{[m]}$', fontsize=fontsize)
+        ax.set_ylabel('$\mathrm{Orbit\;[mm]}$', fontsize=fontsize)
         ax.legend(loc=3)
 
         plt.show()
@@ -735,18 +766,28 @@ class DakotaOC(DakotaBase):
         return zpos, x, y, m
 
     def simple_run(self, method='cg', mpi=None, np=None, echo=True, **kws):
-        """ run optimization after ``set_bpms()`` and ``set_cors()``,
-        by using default configuration and make full use of computing resources.
+        """Run optimization after ``set_bpms()`` and ``set_cors()``, by using
+        default configuration and make full use of computing resources.
 
-        :param method: optimization method, 'cg', 'ps', 'cg' by default
-        :param mpi: if True, run DAKOTA in parallel mode, False by default
-        :param np: number of processes to use, only valid when ``mpi`` is True 
-        :param echo: suppress output if False, True by default
-        :param kws: keyword parameters
-            valid keys:
-                * step: gradient step, 1e-6 by default
-                * iternum: max iteration number, 20 by default
-                * evalnum: max function evaulation number, 1000 by default
+        Parameters
+        ----------
+        method : str
+            Optimization method, 'cg', 'ps', 'cg' by default.
+        mpi : bool
+            If True, run DAKOTA in parallel mode, False by default.
+        np : int
+            Number of processes to use, only valid when ``mpi`` is True.
+        echo : bool
+            Suppress output if False, True by default.
+
+        Keyword Arguments
+        -----------------
+        step : float
+            Gradient step, 1e-6 by default.
+        iternum : int
+            Max iteration number, 20 by default.
+        evalnum : int
+            Max function evaulation number, 1000 by default.
         """
         if method == 'cg':
             max_iter_num = kws.get('iternum', 20)
