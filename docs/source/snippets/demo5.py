@@ -30,7 +30,7 @@ m = genopt.DakotaModel()
 oc_ins.set_model(m)
 
 # set method
-md = genoptDakotaMethod(method='ps', 
+md = genopt.DakotaMethod(method='ps', 
         max_function_evaluations=1000)
 oc_ins.set_method(method=md)
 
@@ -57,7 +57,7 @@ oc_ins.run(mpi=True, np=4)
 #print oc_ins.get_opt_results()
 
 # get output
-oc_ins.get_orbit((oc_ins.hcor, oc_ins.vcor), oc_ins.get_opt_results(), 
+oc_ins.get_orbit((oc_ins.hcors, oc_ins.vcors), oc_ins.get_opt_results(), 
                   outfile='orbit.dat')
 
 # plot
