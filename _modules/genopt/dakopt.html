@@ -1,0 +1,1088 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>genopt.dakopt &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/frib-favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../src/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/demos.html">Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">genopt</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>genopt.dakopt</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for genopt.dakopt</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot; General optimization module by utilizing DAKOTA</span>
+
+<span class="sd">* orbit correction: ``DakotaOC``</span>
+
+<span class="sd">Tong Zhang &lt;zhangt@frib.msu.edu&gt;</span>
+
+<span class="sd">2016-10-23 14:26:13 PM EDT</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="k">import</span> <span class="n">rmtree</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">from</span> <span class="nn">flame</span> <span class="k">import</span> <span class="n">Machine</span>
+<span class="kn">import</span> <span class="nn">dakutils</span>
+<span class="kn">from</span> <span class="nn">dakutils</span> <span class="k">import</span> <span class="n">test_one_element</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">phantasy.library.model</span> <span class="k">import</span> <span class="n">generate_latfile</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">dakutils</span> <span class="k">import</span> <span class="n">generate_latfile</span>
+
+
+<div class="viewcode-block" id="DakotaBase"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaBase">[docs]</a><span class="k">class</span> <span class="nc">DakotaBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for general optimization, initialized parameters.</span>
+
+<span class="sd">    Keyword Arguments</span>
+<span class="sd">    -----------------</span>
+<span class="sd">    workdir : str</span>
+<span class="sd">        Root dir for dakota input/output files, the defualt one should be</span>
+<span class="sd">        created in /tmp, or define some dir path.</span>
+<span class="sd">    dakexec : str</span>
+<span class="sd">        Full path of dakota executable, the default one should be *dakota*,</span>
+<span class="sd">        or define the full path.</span>
+<span class="sd">    dakhead : str</span>
+<span class="sd">        Prefixed name for input/output files of *dakota*, the default one is</span>
+<span class="sd">        *dakota*.</span>
+<span class="sd">    keep : bool</span>
+<span class="sd">        If keep the working directory (i.e. defined by *workdir*), default is</span>
+<span class="sd">        False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="c1"># workdir</span>
+        <span class="n">wdir</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;workdir&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">wdir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#self._workdir = os.path.join(&#39;/tmp&#39;, &#39;dakota_&#39; + dakutils.random_string(6))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;dakota_&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">wdir</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">wdir</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">wdir</span><span class="p">)</span>
+
+        <span class="c1"># keep working data?</span>
+        <span class="n">keepflag</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;keep&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keepflag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">keepflag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keep</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_keep</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># dakexec</span>
+        <span class="k">if</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dakexec&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dakexec</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dakexec&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dakexec</span> <span class="o">=</span> <span class="s1">&#39;dakota&#39;</span>
+
+        <span class="c1"># dakhead</span>
+        <span class="k">if</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dakhead&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dakhead</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;dakhead&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dakhead</span> <span class="o">=</span> <span class="s1">&#39;dakota&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dakin</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dakout</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dakexec</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dakexec</span>
+
+    <span class="nd">@dakexec</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dakexec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dakexec</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dakexec</span> <span class="o">=</span> <span class="n">dakexec</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">workdir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span>
+
+    <span class="nd">@workdir</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">workdir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wdir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span> <span class="o">=</span> <span class="n">wdir</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dakhead</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dakhead</span>
+
+    <span class="nd">@dakhead</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">dakhead</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nprefix</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dakhead</span> <span class="o">=</span> <span class="n">nprefix</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">keep</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep</span>
+
+    <span class="nd">@keep</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">keep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_keep</span> <span class="o">=</span> <span class="n">f</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keep</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;work files are kept in: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">))</span></div>
+        
+
+<div class="viewcode-block" id="DakotaOC"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC">[docs]</a><span class="k">class</span> <span class="nc">DakotaOC</span><span class="p">(</span><span class="n">DakotaBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dakota optimization class with orbit correction driver.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lat_file : str</span>
+<span class="sd">        Lattice file name.</span>
+<span class="sd">    elem_bpm : list(int)</span>
+<span class="sd">        List of element indice of BPMs.</span>
+<span class="sd">    elem_cor : list(int)</span>
+<span class="sd">        List of element indice of correctors, always folders of 2.</span>
+<span class="sd">    elem_hcor : list(int)</span>
+<span class="sd">        List of element indice of horizontal correctors.</span>
+<span class="sd">    elem_vcor : list(int)</span>
+<span class="sd">        List of element indice of vertical correctors.</span>
+<span class="sd">    ref_x0 : list(float)</span>
+<span class="sd">        Reference orbit in x, list of BPM readings.</span>
+<span class="sd">    ref_y0 : list(float)</span>
+<span class="sd">        Reference orbit in y, list of BPM readings.</span>
+<span class="sd">    ref_flag : str</span>
+<span class="sd">        String flag for objective functions:</span>
+
+<span class="sd">        - ``x``: :math:`\sum \Delta x^2`, :math:`\Delta x = x-x_0`;</span>
+<span class="sd">        - ``y``: :math:`\sum \Delta y^2`, :math:`\Delta y = y-y_0`;</span>
+<span class="sd">        - ``xy``: :math:`\sum \Delta x^2 + \sum \Delta y^2`.</span>
+<span class="sd">    model : str</span>
+<span class="sd">        Simulation model, &#39;flame&#39; or &#39;impact&#39;.</span>
+<span class="sd">    optdriver : str</span>
+<span class="sd">        Analysis driver for optimization, &#39;flamedriver_oc&#39; by default.</span>
+
+<span class="sd">    Keyword Arguments</span>
+<span class="sd">    -----------------</span>
+<span class="sd">    workdir : str</span>
+<span class="sd">        Root dir for dakota input/output files, the defualt one should be</span>
+<span class="sd">        created in /tmp, or define some dir path.</span>
+<span class="sd">    dakexec : str</span>
+<span class="sd">        Full path of dakota executable, the default one should be *dakota*,</span>
+<span class="sd">        or define the full path.</span>
+<span class="sd">    dakhead : str</span>
+<span class="sd">        Prefixed name for input/output files of *dakota*, the default one is</span>
+<span class="sd">        *dakota*.</span>
+<span class="sd">    keep : bool</span>
+<span class="sd">        If keep the working directory (i.e. defined by *workdir*), default is</span>
+<span class="sd">        False.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    ``elem_bpm`` should be treated as index of elemnt with type name of &#39;BPM&#39;,</span>
+<span class="sd">    however, for the simulation convenience, any element is acceptable,</span>
+<span class="sd">    see :func:`set_bpms()`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">lat_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">elem_bpm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">elem_cor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">elem_hcor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">elem_vcor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ref_x0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ref_y0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">ref_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">optdriver</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kws</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">lat_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_lat_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">lat_file</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># use example lattice file</span>
+            <span class="k">pass</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span> <span class="o">=</span> <span class="n">elem_bpm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="o">=</span> <span class="n">elem_hcor</span><span class="p">,</span> <span class="n">elem_vcor</span>
+        <span class="k">if</span> <span class="n">elem_cor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="o">=</span> <span class="n">elem_cor</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">],</span> <span class="n">elem_cor</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">elem_hcor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span> <span class="o">=</span> <span class="n">elem_hcor</span>
+        <span class="k">elif</span> <span class="n">elem_vcor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="o">=</span> <span class="n">elem_vcor</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span> <span class="o">=</span> <span class="n">ref_x0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span> <span class="o">=</span> <span class="n">ref_y0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span> <span class="o">=</span> <span class="s2">&quot;xy&quot;</span> <span class="k">if</span> <span class="n">ref_flag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ref_flag</span>
+
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="s1">&#39;FLAME&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">optdriver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_opt_driver</span> <span class="o">=</span> <span class="s1">&#39;flamedriver_oc&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_machine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lat_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_bpms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_cors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ref_x0</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ref_y0</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hcors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vcors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">latfile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lat_file</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ref_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ref_y0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ref_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span>
+
+    <span class="nd">@ref_flag</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ref_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span> <span class="o">=</span> <span class="n">s</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bpms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span>
+
+    <span class="nd">@latfile</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">latfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latfile</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lat_file</span> <span class="o">=</span> <span class="n">latfile</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">optdriver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opt_driver</span>
+
+    <span class="nd">@optdriver</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">optdriver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_opt_driver</span> <span class="o">=</span> <span class="n">driver</span>
+
+<div class="viewcode-block" id="DakotaOC.get_machine"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_machine">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get flame machine object for potential usage</span>
+
+<span class="sd">        :return: flame machine object or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+    
+<div class="viewcode-block" id="DakotaOC.create_machine"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.create_machine">[docs]</a>    <span class="k">def</span> <span class="nf">create_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; create machine instance with model configuration</span>
+<span class="sd">        </span>
+<span class="sd">        * setup _machine</span>
+<span class="sd">        * setup _elem_bpm, _elem_cor or (_elem_hcor and _elem_vcor)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">==</span> <span class="s2">&quot;FLAME&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_flame_machine</span><span class="p">(</span><span class="n">lat_file</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">==</span> <span class="s2">&quot;IMPACT&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_impact_machine</span><span class="p">(</span><span class="n">lat_file</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_flame_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat_file</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">Machine</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">lat_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to open </span><span class="si">{fn}</span><span class="s2">: </span><span class="si">{info}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fn</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span>
+                                                       <span class="n">info</span><span class="o">=</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">RuntimeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot parse lattice, &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to create machine&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_impact_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lat_file</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="DakotaOC.set_ref_x0"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_ref_x0">[docs]</a>    <span class="k">def</span> <span class="nf">set_ref_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ref_arr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; set reference orbit in x, if not set, use 0s</span>
+
+<span class="sd">        :param ref_arr: array of reference orbit values</span>
+<span class="sd">                        size should be the same number as selected BPMs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ref_arr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span> <span class="o">=</span> <span class="n">ref_arr</span></div>
+
+<div class="viewcode-block" id="DakotaOC.set_ref_y0"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_ref_y0">[docs]</a>    <span class="k">def</span> <span class="nf">set_ref_y0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ref_arr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; set reference orbit in y, if not set, use 0s</span>
+
+<span class="sd">        :param ref_arr: array of reference orbit values</span>
+<span class="sd">                        size should be the same number as selected BPMs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ref_arr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span> <span class="o">=</span> <span class="n">ref_arr</span></div>
+    
+<div class="viewcode-block" id="DakotaOC.set_bpms"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_bpms">[docs]</a>    <span class="k">def</span> <span class="nf">set_bpms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bpm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pseudo_all</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; set BPMs, and trying to set reference orbit ``(x,y)`` if ``x`` and ``y``</span>
+<span class="sd">        is of one unique value.</span>
+
+<span class="sd">        :param bpm: list of bpm indices, if None, use all BPMs</span>
+<span class="sd">        :param pseudo_all: if set True, will use all elements, ignore ``bpm`` parameter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bpm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_bpms</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span> <span class="o">=</span> <span class="n">bpm</span>
+            <span class="n">bpm_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bpm</span><span class="p">)</span>
+       
+        <span class="k">if</span> <span class="n">pseudo_all</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span>
+            <span class="n">bpm_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">test_one_element</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_ref_x0</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">*</span><span class="n">bpm_count</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">if</span> <span class="n">test_one_element</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_ref_y0</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">*</span><span class="n">bpm_count</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+            <span class="c1">#print(&quot;Warning, not set reference orbit, requires &#39;set_ref_x0()&#39; and &#39;set_ref_y0()&#39;&quot;)</span>
+
+
+<div class="viewcode-block" id="DakotaOC.set_cors"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_cors">[docs]</a>    <span class="k">def</span> <span class="nf">set_cors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hcor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vcor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; set correctors, if cor, hcor and vcor are None, use all correctors</span>
+<span class="sd">        if cor is not None, use cor, ignore hcor and vcor</span>
+
+<span class="sd">        :param cor: list of corrector indices, hcor, vcor,...</span>
+<span class="sd">        :param hcor: list of horizontal corrector indices</span>
+<span class="sd">        :param vcor: list of vertical corrector indices</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">cor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span> <span class="o">=</span> <span class="n">cor</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="o">=</span> <span class="n">cor</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">hcor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">vcor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_cors</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_cors</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">hcor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span> <span class="o">=</span> <span class="n">hcor</span>
+                <span class="k">if</span> <span class="n">vcor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="o">=</span> <span class="n">vcor</span></div>
+
+    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; configure model</span>
+
+<span class="sd">        :param kws: only for impact, available keys:</span>
+<span class="sd">            &quot;execpath&quot;: path of impact executable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">==</span> <span class="s1">&#39;flame&#39;</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c1"># nothing more needs to do if model is &#39;flame&#39;</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># self._model is &#39;impact&#39;</span>
+            <span class="n">execpath</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;execpath&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">execpath</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_impexec</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">execpath</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># just use impact as the default name</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_impexec</span> <span class="o">=</span> <span class="s2">&quot;impact&quot;</span>
+
+<div class="viewcode-block" id="DakotaOC.get_all_bpms"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_all_bpms">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_bpms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get list of all valid bpms indices</span>
+
+<span class="sd">        :return: a list of bpm indices</span>
+<span class="sd">        </span>
+<span class="sd">        :Example:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; dakoc = DakotaOC(&#39;test/test.lat&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; print(dakoc.get_all_bpms())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_elem_by_type</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;bpm&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DakotaOC.get_all_cors"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_all_cors">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_cors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get list of all valid correctors indices</span>
+<span class="sd">        </span>
+<span class="sd">        :param type: define corrector type, &#39;h&#39;: horizontal, &#39;v&#39;: vertical, </span>
+<span class="sd">            if not defined, return all correctors</span>
+<span class="sd">        :return: a list of corrector indices</span>
+
+<span class="sd">        :Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; dakoc = DakotaOC(&#39;test/test.lat&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; print(dakoc.get_all_cors())</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_cors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_elem_by_type</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;orbtrim&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">all_cors</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">all_cors</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">all_cors</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;warning: unrecongnized corrector type.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">all_cors</span></div>
+
+<div class="viewcode-block" id="DakotaOC.get_elem_by_name"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_elem_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_elem_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get list of element(s) by name(s)</span>
+
+<span class="sd">        :param name: tuple or list of name(s)</span>
+<span class="sd">        :return: list of element indices</span>
+
+<span class="sd">        :Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; dakoc = DakotaOC(&#39;test/test.lat&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; names = (&#39;LS1_CA01:BPM_D1144&#39;, &#39;LS1_WA01:BPM_D1155&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; idx = dakoc.get_elem_by_name(names)</span>
+<span class="sd">        &gt;&gt;&gt; print(idx)</span>
+<span class="sd">        [18, 31]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">)</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">n</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">retval</span></div>
+
+<div class="viewcode-block" id="DakotaOC.get_elem_by_type"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_elem_by_type">[docs]</a>    <span class="k">def</span> <span class="nf">get_elem_by_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get list of element(s) by type</span>
+
+<span class="sd">        :param type: string name of element type</span>
+<span class="sd">        :return: list of element indices</span>
+
+<span class="sd">        :Example:</span>
+
+<span class="sd">        &gt;&gt;&gt; dakoc = DakotaOC(&#39;test/test.lat&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; type = &#39;bpm&#39;</span>
+<span class="sd">        &gt;&gt;&gt; idx = dakoc.get_elem_by_type(type)</span>
+<span class="sd">        &gt;&gt;&gt; print(idx)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">retval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">retval</span></div>
+
+<div class="viewcode-block" id="DakotaOC.get_all_elem"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_all_elem">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_elem</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get all elements from ``Machine`` object</span>
+
+<span class="sd">        :return: list of element indices</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DakotaOC.gen_dakota_input"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.gen_dakota_input">[docs]</a>    <span class="k">def</span> <span class="nf">gen_dakota_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; generate dakota input file</span>
+
+<span class="sd">        :param infile: dakota input filename</span>
+<span class="sd">        :param debug: if True, generate a simple test input file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">debug</span><span class="p">:</span>
+            <span class="n">dakinp</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaInput</span><span class="p">()</span>
+            <span class="c1">#dakinp.set_template(name=&#39;oc&#39;)</span>
+            <span class="n">dakinp</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oc_interface</span>
+            <span class="n">dakinp</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oc_variables</span>
+            <span class="n">dakinp</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oc_model</span>
+            <span class="n">dakinp</span><span class="o">.</span><span class="n">responses</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oc_responses</span>
+            <span class="n">dakinp</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oc_method</span>
+            <span class="n">dakinp</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_oc_environ</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># debug is True</span>
+            <span class="n">dakinp</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaInput</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">infile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">infile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dakhead</span> <span class="o">+</span> <span class="s1">&#39;.in&#39;</span>
+        <span class="n">inputfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_workdir</span><span class="p">,</span> <span class="n">infile</span><span class="p">)</span>
+        <span class="n">outputfile</span> <span class="o">=</span> <span class="n">inputfile</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.in&#39;</span><span class="p">,</span> <span class="s1">&#39;.out&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dakin</span> <span class="o">=</span> <span class="n">inputfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dakout</span> <span class="o">=</span> <span class="n">outputfile</span>
+        <span class="n">dakinp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">inputfile</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DakotaOC.set_variables"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_variables">[docs]</a>    <span class="k">def</span> <span class="nf">set_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plist</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; setup variables block, that is setup ``oc_variables``</span>
+<span class="sd">        should be ready to invoke after ``set_cors()``</span>
+
+<span class="sd">        :param plist: list of defined parameters (``DakotaParam`` object), </span>
+<span class="sd">                      automatically setup if not defined</span>
+<span class="sd">        :param initial: initial values for all variables, only valid when plist is None</span>
+<span class="sd">        :param lower: lower bound for all variables, only valid when plist is None</span>
+<span class="sd">        :param upper: upper bound for all variables, only valid when plist is None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">plist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No corrector is selected, set_cors() first.&quot;</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">x_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">y_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">n</span> <span class="o">=</span> <span class="n">x_len</span> <span class="o">+</span> <span class="n">y_len</span>
+                <span class="n">oc_variables</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;continuous_design = </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+                <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  initial_point&#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">initial</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+                <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  lower_bounds &#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">lower</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+                <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  upper_bounds &#39;</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">upper</span><span class="p">)</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+                <span class="n">xlbls</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&#39;x</span><span class="si">{0:03d}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">x_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                <span class="n">ylbls</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&#39;y</span><span class="si">{0:03d}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">y_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  descriptors  &#39;</span> <span class="o">+</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span><span class="s2">&quot;</span><span class="si">{0:&gt;14s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lbl</span><span class="p">)</span> <span class="k">for</span> <span class="n">lbl</span> <span class="ow">in</span> <span class="n">xlbls</span> <span class="o">+</span> <span class="n">ylbls</span><span class="p">]))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_oc_variables</span> <span class="o">=</span> <span class="n">oc_variables</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># plist = [p1, p2, ...]</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">plist</span><span class="p">)</span>
+            <span class="n">initial_point_string</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">initial</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span>
+            <span class="n">lower_bounds_string</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span>
+            <span class="n">upper_bounds_string</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span>
+            <span class="n">descriptors_string</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span>
+            <span class="n">oc_variables</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;continuous_design = </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+            <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  initial_point&#39;</span> <span class="o">+</span> <span class="n">initial_point_string</span><span class="p">)</span>
+            <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  lower_bounds &#39;</span> <span class="o">+</span> <span class="n">lower_bounds_string</span><span class="p">)</span>
+            <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  upper_bounds &#39;</span> <span class="o">+</span> <span class="n">upper_bounds_string</span><span class="p">)</span>
+            <span class="n">oc_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  descriptors  &#39;</span> <span class="o">+</span> <span class="n">descriptors_string</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_oc_variables</span> <span class="o">=</span> <span class="n">oc_variables</span></div>
+
+<div class="viewcode-block" id="DakotaOC.set_interface"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_interface">[docs]</a>    <span class="k">def</span> <span class="nf">set_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interface</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; setup interface block, that is setup ``oc_interface``</span>
+<span class="sd">        should be ready to invoke after ``set_cors`` and ``set_bpms``</span>
+
+<span class="sd">        :param interface: ``DakotaInterface`` object, automatically setup if not defined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">interface</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">oc_interface</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaInterface</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fork&#39;</span><span class="p">,</span> <span class="n">latfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lat_file</span><span class="p">,</span>
+                                                    <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">,</span>
+                                                    <span class="n">bpms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span><span class="p">,</span>
+                                                    <span class="n">hcors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">,</span>
+                                                    <span class="n">vcors</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span><span class="p">,</span>
+                                                    <span class="n">ref_x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span><span class="p">,</span>
+                                                    <span class="n">ref_y0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span><span class="p">,</span>
+                                                    <span class="n">ref_flag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span><span class="p">,</span>
+                                                    <span class="n">deactivate</span><span class="o">=</span><span class="s1">&#39;active_set_vector&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oc_interface</span> <span class="o">=</span> <span class="n">interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oc_interface</span> <span class="o">=</span> <span class="n">oc_interface</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DakotaOC.set_model"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_model">[docs]</a>    <span class="k">def</span> <span class="nf">set_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; setup model block, that is setup ``oc_model``</span>
+
+<span class="sd">        :param model: ``DakotaModel`` object, automatically setup if not defined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">oc_model</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaModel</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oc_model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oc_model</span> <span class="o">=</span> <span class="n">oc_model</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DakotaOC.set_responses"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_responses">[docs]</a>    <span class="k">def</span> <span class="nf">set_responses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">responses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; setup responses block, that is setup ``oc_responses``</span>
+
+<span class="sd">        :param responses: ``DakotaResponses`` object, automatically setup if not defined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">responses</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">oc_responses</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaResponses</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="s1">&#39;numerical&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oc_responses</span> <span class="o">=</span> <span class="n">responses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oc_responses</span> <span class="o">=</span> <span class="n">oc_responses</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DakotaOC.set_environ"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_environ">[docs]</a>    <span class="k">def</span> <span class="nf">set_environ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">environ</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; setup environment block, that is setup ``oc_environ``</span>
+
+<span class="sd">        :param environ: ``DakotaEnviron`` object, automatically setup if not defined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">environ</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">oc_environ</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaEnviron</span><span class="p">(</span><span class="n">tabfile</span><span class="o">=</span><span class="s1">&#39;dakota.dat&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oc_environ</span> <span class="o">=</span> <span class="n">environ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oc_environ</span><span class="o">=</span> <span class="n">oc_environ</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DakotaOC.set_method"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.set_method">[docs]</a>    <span class="k">def</span> <span class="nf">set_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; setup method block, that is setup ``oc_method``</span>
+
+<span class="sd">        :param method: ``DakotaMethod`` object, automatically setup if not defined</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">oc_method</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">oc_method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_oc_method</span> <span class="o">=</span> <span class="n">oc_method</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DakotaOC.run"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mpi</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; run optimization</span>
+
+<span class="sd">        :param mpi: if True, run DAKOTA in parallel mode, False by default</span>
+<span class="sd">        :param np: number of processes to use, only valid when ``mpi`` is True </span>
+<span class="sd">        :param echo: suppress output if False, True by default</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mpi</span><span class="p">:</span>
+            <span class="n">max_core_num</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">np</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_core_num</span><span class="p">:</span>
+                <span class="n">np</span> <span class="o">=</span> <span class="n">max_core_num</span>
+            <span class="n">run_command</span> <span class="o">=</span> <span class="s2">&quot;mpirun -np </span><span class="si">{np}</span><span class="s2"> </span><span class="si">{dakexec}</span><span class="s2"> -i </span><span class="si">{dakin}</span><span class="s2"> -o </span><span class="si">{dakout}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">,</span>
+                <span class="n">dakexec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dakexec</span><span class="p">,</span>
+                <span class="n">dakin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dakin</span><span class="p">,</span>
+                <span class="n">dakout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dakout</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># mpi is False</span>
+            <span class="n">run_command</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{dakexec}</span><span class="s2"> -i </span><span class="si">{dakin}</span><span class="s2"> -o </span><span class="si">{dakout}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">dakexec</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dakexec</span><span class="p">,</span>
+                <span class="n">dakin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dakin</span><span class="p">,</span>
+                <span class="n">dakout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dakout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">echo</span><span class="p">:</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">run_command</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">devnull</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">devnull</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">run_command</span><span class="o">.</span><span class="n">split</span><span class="p">(),</span> <span class="n">stdout</span><span class="o">=</span><span class="n">devnull</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DakotaOC.get_opt_results"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_opt_results">[docs]</a>    <span class="k">def</span> <span class="nf">get_opt_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;dict&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;plain&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; extract optimized results from dakota output</span>
+
+<span class="sd">        :param outfile: file name of dakota output file, </span>
+<span class="sd">            &#39;dakota.out&#39; by default</span>
+<span class="sd">        :param rtype: type of returned results, &#39;dict&#39; or &#39;list&#39;, </span>
+<span class="sd">            &#39;dict&#39; by default</span>
+<span class="sd">        :param label: label types for returned variables, only valid when rtype &#39;dict&#39;, </span>
+<span class="sd">            &#39;plain&#39; by default:</span>
+
+<span class="sd">                * *&#39;plain&#39;*: variable labels with format of ``x1``, ``x2``, ``y1``, ``y2``, etc.</span>
+<span class="sd">                  e.g. ``{&#39;x1&#39;: v1, &#39;y1&#39;: v2}``</span>
+<span class="sd">                * *&#39;fancy&#39;*: variable labels with the name defined in lattice file,</span>
+<span class="sd">                  e.g. ``&#39;LS1_CA01:DCH_D1131&#39;``, dict returned sample: </span>
+<span class="sd">                  ``{&#39;LS1_CA01:DCH_D1131&#39;: {&#39;id&#39;:9, &#39;config&#39;:{&#39;theta_x&#39;:v1}}}``</span>
+
+<span class="sd">        .. note:: The ``fancy`` option will make re-configuring flame machine in a more </span>
+<span class="sd">            convenient way, such as:</span>
+
+<span class="sd">            &gt;&gt;&gt; opt_cors = get_opt_results(label=&#39;fancy&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; for k,v in opt_cors.items():</span>
+<span class="sd">            &gt;&gt;&gt;     m.reconfigure(v[&#39;id&#39;], v[&#39;config&#39;])</span>
+<span class="sd">            &gt;&gt;&gt; # here m is an instance of flame.Machine class</span>
+<span class="sd">            &gt;&gt;&gt; </span>
+
+<span class="sd">        :return: by default return a dict of optimized results with each item</span>
+<span class="sd">            of the format like &quot;x1&quot;:0.1 or more fancy format by set label with &#39;fancy&#39;, etc.,</span>
+<span class="sd">            if rtype=&#39;list&#39;, return a list of values, when the keys are ascend sorted.</span>
+
+<span class="sd">        :Example:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; opt_vars = get_optresults(outfile=&#39;flame_oc.out&#39;, rtype=&#39;dict&#39;):</span>
+<span class="sd">        &gt;&gt;&gt; print(opt_vars)</span>
+<span class="sd">        {&#39;x2&#39;: 0.0020782814353, &#39;x1&#39;: -0.0017913264033}</span>
+<span class="sd">        &gt;&gt;&gt; opt_vars = get_optresults(outfile=&#39;flame_oc.out&#39;, rtype=&#39;list&#39;):</span>
+<span class="sd">        &gt;&gt;&gt; print(opt_vars)</span>
+<span class="sd">        [-0.0017913264033, 0.0020782814353]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">outfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">outfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dakout</span>
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="n">outfile</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="n">rtype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rdict</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="n">outfile</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="n">rtype</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="s1">&#39;plain&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">rdict</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># label = &#39;fancy&#39;</span>
+                <span class="n">val_x</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rdict</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)]</span>
+                <span class="n">val_y</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rdict</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)]</span>
+                <span class="n">vx</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">:{</span><span class="s1">&#39;theta_x&#39;</span><span class="p">:</span> <span class="n">v</span><span class="p">}}</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">,</span> <span class="n">val_x</span><span class="p">)]</span>
+                <span class="n">vy</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">:{</span><span class="s1">&#39;theta_y&#39;</span><span class="p">:</span> <span class="n">v</span><span class="p">}}</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span><span class="p">,</span> <span class="n">val_y</span><span class="p">)]</span>
+                <span class="n">kx</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">]</span>
+                <span class="n">ky</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="n">i</span><span class="p">)[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span><span class="p">]</span>
+                <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">kx</span><span class="o">+</span><span class="n">ky</span><span class="p">,</span> <span class="n">vx</span><span class="o">+</span><span class="n">vy</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DakotaOC.plot"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show orbit.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        outfile : str</span>
+<span class="sd">            Output file of dakota.</span>
+<span class="sd">        figsize : tuple</span>
+<span class="sd">            Figure size, ``(h, w)``.</span>
+<span class="sd">        dpi : int</span>
+<span class="sd">            Figure dpi.</span>
+<span class="sd">        fontsize : int</span>
+<span class="sd">            Label font size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">outfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">opt_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">opt_vars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="n">outfile</span><span class="p">)</span>
+
+        <span class="n">idx_h</span><span class="p">,</span> <span class="n">idx_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span>
+        <span class="n">zpos</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">mtmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_orbit</span><span class="p">((</span><span class="n">idx_h</span><span class="p">,</span> <span class="n">idx_v</span><span class="p">),</span> <span class="n">opt_vars</span><span class="p">)</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="n">dpi</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">)</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="n">linex</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">zpos</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="s1">&#39;r-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$x$&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">liney</span><span class="p">,</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">zpos</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;$y$&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$z\,\mathrm{[m]}$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;$\mathrm{Orbit\;[mm]}$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DakotaOC.get_orbit"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_orbit">[docs]</a>    <span class="k">def</span> <span class="nf">get_orbit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; calculate the orbit with given configurations</span>
+
+<span class="sd">        :param idx: (idx_hcor, idx_vcor), tuple of list of indices of h/v cors</span>
+<span class="sd">        :param val: values for each correctos, h/v</span>
+<span class="sd">        :param outfile: filename to save the data</span>
+<span class="sd">        :return: tuple of zpos, env_x, env_y, machine</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx_x</span><span class="p">,</span> <span class="n">idx_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_hcor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_vcor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">idx_x</span><span class="p">,</span> <span class="n">idx_y</span> <span class="o">=</span> <span class="n">idx</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span>
+        <span class="n">val_x</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)]</span>
+        <span class="n">val_y</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">val</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)]</span>
+        <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">reconfigure</span><span class="p">(</span><span class="n">eid</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;theta_x&#39;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">})</span>
+         <span class="k">for</span> <span class="p">(</span><span class="n">eid</span><span class="p">,</span> <span class="nb">eval</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idx_x</span><span class="p">,</span> <span class="n">val_x</span><span class="p">)]</span>
+        <span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">reconfigure</span><span class="p">(</span><span class="n">eid</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;theta_y&#39;</span><span class="p">:</span> <span class="nb">eval</span><span class="p">})</span>
+         <span class="k">for</span> <span class="p">(</span><span class="n">eid</span><span class="p">,</span> <span class="nb">eval</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idx_y</span><span class="p">,</span> <span class="n">val_y</span><span class="p">)]</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">allocState</span><span class="p">({})</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">),</span> <span class="n">observe</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">)))</span>
+
+        <span class="n">ob_arr</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elem_bpm</span>
+        <span class="n">zpos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pos</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ob_arr</span><span class="p">])</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[[</span><span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">moment0_env</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ob_arr</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+
+        <span class="k">if</span> <span class="n">outfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span>
+                       <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">zpos</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                       <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%22.14e</span><span class="s2">&quot;</span><span class="p">,</span>
+                       <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;# orbit data saved at &#39;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">ctime</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+                       <span class="n">header</span><span class="o">=</span><span class="s2">&quot;#</span><span class="si">{0:^22s}</span><span class="s2"> </span><span class="si">{1:^22s}</span><span class="s2"> </span><span class="si">{2:^22s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                           <span class="s2">&quot;zpos [m]&quot;</span><span class="p">,</span> <span class="s2">&quot;x [mm]&quot;</span><span class="p">,</span> <span class="s2">&quot;y [mm]&quot;</span><span class="p">),</span>
+                       <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">zpos</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">m</span></div>
+
+<div class="viewcode-block" id="DakotaOC.simple_run"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.simple_run">[docs]</a>    <span class="k">def</span> <span class="nf">simple_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="n">mpi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run optimization after ``set_bpms()`` and ``set_cors()``, by using</span>
+<span class="sd">        default configuration and make full use of computing resources.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method : str</span>
+<span class="sd">            Optimization method, &#39;cg&#39;, &#39;ps&#39;, &#39;cg&#39; by default.</span>
+<span class="sd">        mpi : bool</span>
+<span class="sd">            If True, run DAKOTA in parallel mode, False by default.</span>
+<span class="sd">        np : int</span>
+<span class="sd">            Number of processes to use, only valid when ``mpi`` is True.</span>
+<span class="sd">        echo : bool</span>
+<span class="sd">            Suppress output if False, True by default.</span>
+
+<span class="sd">        Keyword Arguments</span>
+<span class="sd">        -----------------</span>
+<span class="sd">        step : float</span>
+<span class="sd">            Gradient step, 1e-6 by default.</span>
+<span class="sd">        iternum : int</span>
+<span class="sd">            Max iteration number, 20 by default.</span>
+<span class="sd">        evalnum : int</span>
+<span class="sd">            Max function evaulation number, 1000 by default.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>
+            <span class="n">max_iter_num</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;iternum&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">)</span>
+            <span class="n">md</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">,</span> 
+                                       <span class="n">max_iterations</span><span class="o">=</span><span class="n">max_iter_num</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_method</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">md</span><span class="p">)</span>
+            <span class="n">re</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaResponses</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="s1">&#39;numerical&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_responses</span><span class="p">(</span><span class="n">responses</span><span class="o">=</span><span class="n">re</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># &#39;ps&#39;</span>
+            <span class="n">max_eval_num</span> <span class="o">=</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;evalnum&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+            <span class="n">md</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;ps&#39;</span><span class="p">,</span> 
+                                       <span class="n">max_function_evaluations</span><span class="o">=</span><span class="n">max_eval_num</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_method</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">md</span><span class="p">)</span>
+            <span class="n">re</span> <span class="o">=</span> <span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaResponses</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_responses</span><span class="p">(</span><span class="n">responses</span><span class="o">=</span><span class="n">re</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_environ</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_model</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_variables</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_interface</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gen_dakota_input</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mpi</span><span class="p">:</span>
+            <span class="n">max_core_num</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">np</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_core_num</span><span class="p">:</span>
+                <span class="n">np</span> <span class="o">=</span> <span class="n">max_core_num</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mpi</span><span class="o">=</span><span class="n">mpi</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="n">np</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">echo</span><span class="o">=</span><span class="n">echo</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DakotaOC.get_opt_latfile"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakopt.DakotaOC.get_opt_latfile">[docs]</a>    <span class="k">def</span> <span class="nf">get_opt_latfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;out.lat&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get optimized lattice file for potential next usage,</span>
+<span class="sd">        ``run()`` or ``simple_run()`` should be evoked first to get the </span>
+<span class="sd">        optimized results.</span>
+<span class="sd">        </span>
+<span class="sd">        :param outfile: file name for generated lattice file</span>
+<span class="sd">        :return: lattice file name or None if failed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">z</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_orbit</span><span class="p">()</span>
+            <span class="n">rfile</span> <span class="o">=</span> <span class="n">generate_latfile</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">latfile</span><span class="o">=</span><span class="n">outfile</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to generate latfile.&quot;</span><span class="p">)</span>
+            <span class="n">rfile</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">rfile</span></div></div>
+
+
+<div class="viewcode-block" id="test_dakotaoc1"><a class="viewcode-back" href="../../src/apidocs/dakopt.html#genopt.dakopt.test_dakotaoc1">[docs]</a><span class="k">def</span> <span class="nf">test_dakotaoc1</span><span class="p">():</span>
+    <span class="n">latfile</span> <span class="o">=</span> <span class="s1">&#39;test/test.lat&#39;</span>
+    <span class="n">oc_ins</span> <span class="o">=</span> <span class="n">DakotaOC</span><span class="p">(</span><span class="n">lat_file</span><span class="o">=</span><span class="n">latfile</span><span class="p">)</span>
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">gen_dakota_input</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1">#oc_ins.run(mpi=True, np=2)</span>
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="test_dakotaoc2"><a class="viewcode-back" href="../../src/apidocs/dakopt.html#genopt.dakopt.test_dakotaoc2">[docs]</a><span class="k">def</span> <span class="nf">test_dakotaoc2</span><span class="p">():</span>
+    <span class="n">latfile</span> <span class="o">=</span> <span class="s1">&#39;test_392.lat&#39;</span>
+    <span class="n">oc_ins</span> <span class="o">=</span> <span class="n">DakotaOC</span><span class="p">(</span><span class="n">lat_file</span><span class="o">=</span><span class="n">latfile</span><span class="p">)</span>
+    <span class="c1">#names = (&#39;LS1_CA01:BPM_D1144&#39;, &#39;LS1_WA01:BPM_D1155&#39;)</span>
+    <span class="c1">#names = &#39;LS1_CA01:BPM_D1144&#39;</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="s1">&#39;LS1_CB06:DCH_D1574&#39;</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_elem_by_name</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">idx</span>
+
+    <span class="c1"># set BPMs and correctors</span>
+    <span class="n">bpms</span> <span class="o">=</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_elem_by_type</span><span class="p">(</span><span class="s1">&#39;bpm&#39;</span><span class="p">)</span>
+    <span class="n">cors</span> <span class="o">=</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_all_cors</span><span class="p">()[</span><span class="mi">45</span><span class="p">:</span><span class="mi">61</span><span class="p">]</span>
+    <span class="c1">#cors = oc_ins.get_all_cors()[34:50]</span>
+    <span class="c1">#print oc_ins.get_all_cors(type=&#39;v&#39;)</span>
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">set_bpms</span><span class="p">(</span><span class="n">bpm</span><span class="o">=</span><span class="n">bpms</span><span class="p">)</span>
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">set_cors</span><span class="p">(</span><span class="n">cor</span><span class="o">=</span><span class="n">cors</span><span class="p">)</span>
+
+    <span class="c1"># set parameters</span>
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">set_variables</span><span class="p">()</span>
+
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">gen_dakota_input</span><span class="p">()</span>
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mpi</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="c1">#oc_ins.run()</span>
+    <span class="n">oc_ins</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span></div>
+    <span class="c1">#print oc_ins.get_opt_results()</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1">#test_dakotaoc1()</span>
+    <span class="n">test_dakotaoc2</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Jul 31, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

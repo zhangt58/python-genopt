@@ -1,0 +1,1211 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>genopt.dakutils &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/frib-favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../src/intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/demos.html">Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../src/apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">genopt</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>genopt.dakutils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for genopt.dakutils</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot; module contains utilities:</span>
+
+<span class="sd">* generate dakota input files</span>
+<span class="sd">* extract data from output files</span>
+
+<span class="sd">Tong Zhang &lt;zhangt@frib.msu.edu&gt;</span>
+
+<span class="sd">2016-10-17 09:19:25 AM EDT</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">ndarray</span>
+
+
+<div class="viewcode-block" id="DakotaInput"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaInput">[docs]</a><span class="k">class</span> <span class="nc">DakotaInput</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; template of dakota input file, field could be overriden by</span>
+<span class="sd">    providing additional keyword arguments, </span>
+<span class="sd">    </span>
+<span class="sd">    :param kws: keyword arguments, valid keys are dakota directives</span>
+
+<span class="sd">    :Example:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; dak_inp = DakotaInput(method=[&quot;max_iterations = 500&quot;,</span>
+<span class="sd">                                      &quot;convergence_tolerance = 1e-7&quot;,</span>
+<span class="sd">                                      &quot;conmin_frcg&quot;,])</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dakota_directive</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;environment&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;method&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;model&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;variables&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;interface&#39;</span><span class="p">,</span>
+                                 <span class="s1">&#39;responses&#39;</span><span class="p">,</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">environment</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;tabular_data&quot;</span><span class="p">,</span> <span class="s2">&quot;  tabular_data_file &#39;dakota.dat&#39;&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;multidim_parameter_study&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  partitions = 4 4&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;continuous_design = 2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  lower_bounds -1   -1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  upper_bounds  1    1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  descriptors &#39;x1&#39; &#39;x2&#39;&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;analysis_driver = &#39;rosenbrock&#39;&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;  direct&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">responses</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;num_objective_functions = 1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;no_gradients&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;no_hessians&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kws</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">kws</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+<div class="viewcode-block" id="DakotaInput.write"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaInput.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">infile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; write all the input into file, as dakota input file</span>
+
+<span class="sd">        :param infile: fullname of input file, if not defined, infile will</span>
+<span class="sd">            be assigned as &#39;dakota.in&#39; in current working directory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">infile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cur_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">curdir</span>
+            <span class="n">infile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">cur_dir</span><span class="p">,</span> <span class="s1">&#39;dakota.in&#39;</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">infile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">infile</span><span class="p">)</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dakota_directive</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;  &#39;</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">  &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)))</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DakotaInput.set_template"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaInput.set_template">[docs]</a>    <span class="k">def</span> <span class="nf">set_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;oc&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_template_oc</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_template_oc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; template input file for orbit correction</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entry_interface</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">entry_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;fork&#39;</span><span class="p">)</span>
+        <span class="n">entry_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;analysis_driver = &quot;</span><span class="si">{driver}</span><span class="s1"> </span><span class="si">{argv}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">,</span>
+            <span class="n">argv</span><span class="o">=</span><span class="s1">&#39;/home/tong1/work/FRIB/projects/flame_github/optdrivers/oc/test_392.lat&#39;</span><span class="p">))</span>
+        <span class="n">entry_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;deactivate = active_set_vector&#39;</span><span class="p">)</span>
+
+        <span class="n">entry_method</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">entry_method</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;conmin_frcg&#39;</span><span class="p">)</span>
+        <span class="n">entry_method</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  max_iterations=30&#39;</span><span class="p">)</span>
+        <span class="n">entry_method</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  convergence_tolerance=1e-4&#39;</span><span class="p">)</span>
+
+        <span class="n">entry_variables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;continuous_design = 2&#39;</span><span class="p">)</span>
+        <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  initial_point 1e-4 1e-4&#39;</span><span class="p">)</span>
+        <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  lower_bounds -0.01 -0.01&#39;</span><span class="p">)</span>
+        <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  upper_bounds  0.01  0.01&#39;</span><span class="p">)</span>
+        <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  descriptors   &quot;x1&quot; &quot;x2&quot;&#39;</span><span class="p">)</span>
+
+        <span class="n">entry_responses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;num_objective_functions=1&#39;</span><span class="p">)</span>
+        <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;numerical_gradients&#39;</span><span class="p">)</span>
+        <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  method_source dakota&#39;</span><span class="p">)</span>
+        <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  interval_type forward&#39;</span><span class="p">)</span>
+        <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  fd_gradient_step_size 1.0e-6&#39;</span><span class="p">)</span>
+        <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;no_hessians&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">interface</span> <span class="o">=</span> <span class="n">entry_interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="o">=</span> <span class="n">entry_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">entry_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">responses</span> <span class="o">=</span> <span class="n">entry_responses</span></div>
+                
+
+<div class="viewcode-block" id="DakotaParam"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaParam">[docs]</a><span class="k">class</span> <span class="nc">DakotaParam</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; create dakota variable for ``variables`` block</span>
+
+<span class="sd">    :param label: string to represent itself, e.g. ``x001``,</span>
+<span class="sd">                  it is recommended to annotate the number with the format of ``%03d``,</span>
+<span class="sd">                  i.e. ``1 --&gt; 001``, ``10 --&gt; 010``, ``100 --&gt; 100``, etc.</span>
+<span class="sd">    :param initial: initial value, 0.0 by default</span>
+<span class="sd">    :param lower: lower bound, -1.0e10 by default</span>
+<span class="sd">    :param upper: upper bound, 1.0e10 by default</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">initial</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">1.0e10</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0e10</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="s2">&quot;&#39;</span><span class="si">{label}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span> <span class="o">=</span> <span class="n">initial</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lower</span> <span class="o">=</span> <span class="n">lower</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upper</span> <span class="o">=</span> <span class="n">upper</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label</span>
+
+    <span class="nd">@label</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span> <span class="o">=</span> <span class="s2">&quot;&#39;</span><span class="si">{label}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span>
+
+    <span class="nd">@initial</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">initial</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial</span> <span class="o">=</span> <span class="n">x</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lower</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lower</span>
+
+    <span class="nd">@lower</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">lower</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lower</span> <span class="o">=</span> <span class="n">x</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">upper</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upper</span>
+
+    <span class="nd">@upper</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">upper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upper</span> <span class="o">=</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;Parameter </span><span class="si">{label:&gt;3s}</span><span class="s2">: initial value is </span><span class="si">{initial:&gt;.3g}</span><span class="s2">, limit range is [</span><span class="si">{lower:&gt;.3g}</span><span class="s2">:</span><span class="si">{upper:&gt;.3g}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span>
+            <span class="n">initial</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial</span><span class="p">,</span>
+            <span class="n">lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lower</span><span class="p">,</span>
+            <span class="n">upper</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_upper</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DakotaInterface"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaInterface">[docs]</a><span class="k">class</span> <span class="nc">DakotaInterface</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; create dakota interface for ``interface`` block</span>
+
+<span class="sd">    :param mode: &#39;fork&#39; or &#39;direct&#39; (future usage)</span>
+<span class="sd">    :param driver: analysis driver, external (&#39;fork&#39;) executable file</span>
+<span class="sd">                   internal (&#39;direct&#39;) executable file</span>
+<span class="sd">    :param latfile: file name of (flame) lattice file</span>
+<span class="sd">    :param bpms: array of selected BPMs&#39; id</span>
+<span class="sd">    :param hcors: array of selected horizontal (x) correctors&#39; id</span>
+<span class="sd">    :param vcors: array of selected vertical (y) correctors&#39; id</span>
+<span class="sd">    :param ref_x0: array of BPM readings for reference orbit in x, if not defined, use 0s</span>
+<span class="sd">    :param ref_y0: array of BPM readings for reference orbit in y, if not defined, use 0s</span>
+<span class="sd">    :param ref_flag: string flag for objective functions:</span>
+
+<span class="sd">           1. &quot;x&quot;: :math:`\sum \Delta x^2`, :math:`\Delta x = x-x_0`;</span>
+<span class="sd">           2. &quot;y&quot;: :math:`\sum \Delta y^2`, :math:`\Delta y = y-y_0`;</span>
+<span class="sd">           3. &quot;xy&quot;: :math:`\sum \Delta x^2 + \sum \Delta y^2`.</span>
+
+<span class="sd">    :param kws: keyword parameters, valid keys: </span>
+<span class="sd">        e.g.:</span>
+<span class="sd">        * deactivate, possible value: &#39;active_set_vector&#39;</span>
+
+<span class="sd">    .. note:: ``mode`` should be set to be &#39;direct&#39; when the analysis drivers are</span>
+<span class="sd">        built with dakota library, presently, &#39;fork&#39; is used.</span>
+
+<span class="sd">    :Example:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; # for orbit correction</span>
+<span class="sd">    &gt;&gt;&gt; bpms = [1,2,3] # just for demonstration</span>
+<span class="sd">    &gt;&gt;&gt; hcors, vcors = [1,3,5], [2,4,6]</span>
+<span class="sd">    &gt;&gt;&gt; latfile = &#39;test.lat&#39;</span>
+<span class="sd">    &gt;&gt;&gt; oc_interface = DakotaInterface(mode=&#39;fork&#39;, </span>
+<span class="sd">    &gt;&gt;&gt;                                driver=&#39;flamedriver_oc&#39;,</span>
+<span class="sd">    &gt;&gt;&gt;                                latfile=latfile</span>
+<span class="sd">    &gt;&gt;&gt;                                bpms=bpms, hcors=hcors, vcors=vcors,</span>
+<span class="sd">    &gt;&gt;&gt;                                ref_x0=None, ref_y0=None,</span>
+<span class="sd">    &gt;&gt;&gt;                                ref_flag=None,</span>
+<span class="sd">    &gt;&gt;&gt;                                deactivate=&#39;active_set_vector&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; # add extra configurations</span>
+<span class="sd">    &gt;&gt;&gt; oc_interface.set_extra(p1=&#39;v1&#39;, p2=&#39;v2&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; # get configuration</span>
+<span class="sd">    &gt;&gt;&gt; config_str = oc_interface.get_config()</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fork&#39;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">,</span> <span class="n">latfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">bpms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hcors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vcors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_x0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_y0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref_flag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span> <span class="o">=</span> <span class="n">mode</span><span class="p">,</span> <span class="n">driver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_latfile</span> <span class="o">=</span> <span class="n">latfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bpms</span> <span class="o">=</span> <span class="n">bpms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hcors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vcors</span> <span class="o">=</span> <span class="n">hcors</span><span class="p">,</span> <span class="n">vcors</span>
+        <span class="k">if</span> <span class="n">bpms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">bpms</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">bpms</span><span class="p">)</span> <span class="k">if</span> <span class="n">ref_x0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ref_x0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">bpms</span><span class="p">)</span> <span class="k">if</span> <span class="n">ref_y0</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ref_y0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span> <span class="o">=</span> <span class="n">ref_x0</span><span class="p">,</span> <span class="n">ref_y0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span> <span class="o">=</span> <span class="s2">&quot;xy&quot;</span> <span class="k">if</span> <span class="n">ref_flag</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ref_flag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span> <span class="o">=</span> <span class="n">kws</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kws</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span>
+
+    <span class="nd">@mode</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="n">mode</span>
+        
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">driver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span>
+
+    <span class="nd">@driver</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">driver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span> <span class="o">=</span> <span class="n">driver</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">latfile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_latfile</span>
+
+    <span class="nd">@latfile</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">latfile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_latfile</span> <span class="o">=</span> <span class="n">fn</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bpms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bpms</span>
+
+    <span class="nd">@bpms</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">bpms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nlist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bpms</span> <span class="o">=</span> <span class="n">nlist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hcors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hcors</span>
+
+    <span class="nd">@hcors</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">hcors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nlist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hcors</span> <span class="o">=</span> <span class="n">nlist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vcors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vcors</span>
+
+    <span class="nd">@vcors</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">vcors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nlist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vcors</span> <span class="o">=</span> <span class="n">nlist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ref_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span>
+
+    <span class="nd">@ref_x0</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ref_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vlist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span> <span class="o">=</span> <span class="n">vlist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ref_y0</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span>
+
+    <span class="nd">@ref_y0</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ref_y0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vlist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span> <span class="o">=</span> <span class="n">vlist</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ref_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span>
+
+    <span class="nd">@ref_flag</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ref_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span> <span class="o">=</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="DakotaInterface.set_extra"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaInterface.set_extra">[docs]</a>    <span class="k">def</span> <span class="nf">set_extra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; add extra configurations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kws</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Configurations: </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{0:&lt;10s}</span><span class="s2"> ==&gt; </span><span class="si">{1:&lt;10s}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="DakotaInterface.get_config"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaInterface.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get interface configuration for dakota input block</span>
+
+<span class="sd">        :param rtype: &#39;list&#39; or &#39;string&#39;</span>
+<span class="sd">        :return: dakota interface input</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bpms</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">bpms</span> <span class="o">=</span> <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bpms</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># pseudo_all is True</span>
+            <span class="n">bpms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bpms</span>
+        
+        <span class="n">hcors</span> <span class="o">=</span> <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hcors</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+        <span class="n">vcors</span> <span class="o">=</span> <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vcors</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+        <span class="n">ref_x0</span> <span class="o">=</span> <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_x0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+        <span class="n">ref_y0</span> <span class="o">=</span> <span class="s2">&quot;&#39;&quot;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref_y0</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;&#39;&quot;</span>
+
+        <span class="n">oc_interface</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">oc_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="p">)</span>
+        <span class="n">oc_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s1">&#39;analysis_driver = &quot;</span><span class="si">{driver}</span><span class="s1"> </span><span class="si">{latfile}</span><span class="s1"> </span><span class="si">{bpms}</span><span class="s1"> </span><span class="si">{hcors}</span><span class="s1"> </span><span class="si">{vcors}</span><span class="s1"> </span><span class="si">{ref_x0}</span><span class="s1"> </span><span class="si">{ref_y0}</span><span class="s1"> </span><span class="si">{ref_flag}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">driver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="p">,</span>
+                <span class="n">latfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_latfile</span><span class="p">,</span>
+                <span class="n">bpms</span><span class="o">=</span><span class="n">bpms</span><span class="p">,</span>
+                <span class="n">hcors</span><span class="o">=</span><span class="n">hcors</span><span class="p">,</span>
+                <span class="n">vcors</span><span class="o">=</span><span class="n">vcors</span><span class="p">,</span> 
+                <span class="n">ref_x0</span><span class="o">=</span><span class="n">ref_x0</span><span class="p">,</span>
+                <span class="n">ref_y0</span><span class="o">=</span><span class="n">ref_y0</span><span class="p">,</span>
+                <span class="n">ref_flag</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ref_flag</span><span class="p">,</span>
+                <span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">oc_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> = </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">oc_interface</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># list</span>
+            <span class="k">return</span> <span class="n">oc_interface</span></div></div>
+
+
+<div class="viewcode-block" id="DakotaModel"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaModel">[docs]</a><span class="k">class</span> <span class="nc">DakotaModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; create dakota model for ``model`` block</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="s1">&#39;single&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span> <span class="o">=</span> <span class="n">kws</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Configurations: </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{0:&lt;10s}</span><span class="s2"> ==&gt; </span><span class="si">{1:&lt;10s}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="DakotaModel.get_config"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaModel.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get model configuration for dakota input block</span>
+
+<span class="sd">        :param rtype: &#39;list&#39; or &#39;string&#39;</span>
+<span class="sd">        :return: dakota model input</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oc_model</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">oc_model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">oc_model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> = </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">oc_model</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># list</span>
+            <span class="k">return</span> <span class="n">oc_model</span></div></div>
+
+
+<div class="viewcode-block" id="DakotaResponses"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaResponses">[docs]</a><span class="k">class</span> <span class="nc">DakotaResponses</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; create dakota responses for ``responses`` block</span>
+
+<span class="sd">    :param nfunc: num of objective functions</span>
+<span class="sd">    :param gradient: gradient type: &#39;analytic&#39; or &#39;numerical&#39;</span>
+<span class="sd">    :param hessian: hessian configuration</span>
+<span class="sd">    :param kws: keyword parameters for gradients and hessians</span>
+<span class="sd">        valid keys: any available for responses</span>
+<span class="sd">        among which key name of &#39;grad&#39; is for gradients configuration, </span>
+<span class="sd">        the value should be a dict (future)</span>
+
+<span class="sd">    :Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; # default responses:</span>
+<span class="sd">    &gt;&gt;&gt; response = DakotaResponses()</span>
+<span class="sd">    &gt;&gt;&gt; print response.get_config()</span>
+<span class="sd">    [&#39;num_objective_functions = 1&#39;, &#39;no_gradients&#39;, &#39;no_hessians&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # responses with analytic gradients:</span>
+<span class="sd">    &gt;&gt;&gt; response = DakotaResponses(gradient=&#39;analytic&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print response.get_config()</span>
+<span class="sd">    [&#39;num_objective_functions = 1&#39;, &#39;analytic_gradients&#39;, &#39;no_hessians&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # responses with numerical gradients, default configuration:</span>
+<span class="sd">    &gt;&gt;&gt; oc_responses = DakotaResponses(gradient=&#39;numerical&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_responses.get_config()</span>
+<span class="sd">    [&#39;num_objective_functions = 1&#39;, &#39;numerical_gradients&#39;, &#39; method_source dakota&#39;, </span>
+<span class="sd">     &#39; interval_type forward&#39;, &#39; fd_gradient_step_size 1e-06&#39;, &#39;no_hessians&#39;]</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; # responses with numerical gradients, define step:</span>
+<span class="sd">    &gt;&gt;&gt; oc_responses = DakotaResponses(gradient=&#39;numerical&#39;, step=2.0e-7)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_responses.get_config()</span>
+<span class="sd">    [&#39;num_objective_functions = 1&#39;, &#39;numerical_gradients&#39;, &#39; method_source dakota&#39;, </span>
+<span class="sd">     &#39; interval_type forward&#39;, &#39; fd_gradient_step_size 2e-07&#39;, &#39;no_hessians&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &gt;&gt;&gt; # given other keyword parameters:</span>
+<span class="sd">    &gt;&gt;&gt; oc_responses = DakotaResponses(gradient=&#39;numerical&#39;, step=2.0e-7, k1=&#39;v1&#39;, k2=&#39;v2&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_responses.get_config()</span>
+<span class="sd">    [&#39;num_objective_functions = 1&#39;, &#39;numerical_gradients&#39;, &#39; method_source dakota&#39;, </span>
+<span class="sd">     &#39; interval_type forward&#39;, &#39; fd_gradient_step_size 2e-07&#39;, &#39;no_hessians&#39;, &#39;k2 = v2&#39;, &#39;k1 = v1&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nfunc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hessian</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nfunc</span> <span class="o">=</span> <span class="n">nfunc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gradients</span> <span class="o">=</span> <span class="s1">&#39;no_gradients&#39;</span> <span class="k">if</span> <span class="n">gradient</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">gradient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hessians</span> <span class="o">=</span> <span class="s1">&#39;no_hessians&#39;</span> <span class="k">if</span> <span class="n">hessian</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">hessian</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span> <span class="o">=</span> <span class="n">kws</span>
+
+<div class="viewcode-block" id="DakotaResponses.gradients"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaResponses.gradients">[docs]</a>    <span class="k">def</span> <span class="nf">gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">1.0e-6</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; generate gradients configuration</span>
+
+<span class="sd">        :param type: &#39;numerical&#39; or &#39;analytic&#39; (default)</span>
+<span class="sd">        :param step: gradient step size, only valid when type is numerical</span>
+<span class="sd">        :param kws: other keyword parameters</span>
+<span class="sd">        :return: list of configuration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># replace with keyword parameter </span>
+
+        <span class="n">g</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">g</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;analytic&#39;</span><span class="p">:</span>  <span class="c1"># type: analytic</span>
+            <span class="n">g</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;analytic_gradients&#39;</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># type: numerical</span>
+            <span class="n">g</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;numerical_gradients&#39;</span>
+            <span class="n">g</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="s1">&#39;method_source&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;dakota&#39;</span>
+            <span class="n">g</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="s1">&#39;interval_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;forward&#39;</span>
+            <span class="n">g</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">][</span><span class="s1">&#39;fd_gradient_step_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">step</span>
+
+        <span class="n">g_config</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39; </span><span class="si">{0}</span><span class="s1"> </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">g</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+        <span class="n">retval</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">retval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">g_config</span><span class="p">:</span>
+            <span class="n">retval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kws</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">retval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">retval</span></div>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Configurations: </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{0:&lt;10s}</span><span class="s2"> ==&gt; </span><span class="si">{1:&lt;10s}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="DakotaResponses.get_config"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaResponses.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get responses configuration for dakota input block</span>
+
+<span class="sd">        :param rtype: &#39;list&#39; or &#39;string&#39;</span>
+<span class="sd">        :return: dakota responses input</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oc_responses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">oc_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;num_objective_functions = </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nfunc</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gradients</span> <span class="o">==</span> <span class="s1">&#39;no_gradients&#39;</span><span class="p">:</span>
+            <span class="n">oc_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;no_gradients&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="mf">1e-6</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">)</span>
+            <span class="n">grad_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grad&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;grad&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}</span>
+            <span class="n">gradients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradients</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_gradients</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">,</span> <span class="o">**</span><span class="n">grad_dict</span><span class="p">)</span>
+            <span class="n">oc_responses</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">gradients</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hessians</span> <span class="o">==</span> <span class="s1">&#39;no_hessians&#39;</span><span class="p">:</span>
+            <span class="n">oc_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;no_hessians&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">oc_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> = </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">oc_responses</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># list</span>
+            <span class="k">return</span> <span class="n">oc_responses</span></div></div>
+
+
+<div class="viewcode-block" id="DakotaMethod"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaMethod">[docs]</a><span class="k">class</span> <span class="nc">DakotaMethod</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; create dakota method for ``method`` block</span>
+
+<span class="sd">    :param method: method name, &#39;cg&#39; by default, all possible choices: &#39;cg&#39;, &#39;ps&#39;</span>
+<span class="sd">    :param iternum: max iteration number, 20 by default</span>
+<span class="sd">    :param tolerance: convergence tolerance, 1e-4 by default</span>
+<span class="sd">    :param kws: other keyword parameters</span>
+
+<span class="sd">    :Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; # default</span>
+<span class="sd">    &gt;&gt;&gt; oc_method = DakotaMethod()</span>
+<span class="sd">    &gt;&gt;&gt; print oc_method.get_config()</span>
+<span class="sd">    [&#39;conmin_frcg&#39;, &#39; convergence_tolerance 0.0001&#39;, &#39; max_iterations 20&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; # define method with pattern search</span>
+<span class="sd">    &gt;&gt;&gt; oc_method = DakotaMethod(method=&#39;ps&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_method.get_config()</span>
+<span class="sd">    [&#39;coliny_pattern_search&#39;, &#39; contraction_factor 0.75&#39;, &#39; max_function_evaluations 500&#39;, </span>
+<span class="sd">     &#39; solution_accuracy 0.0001&#39;, &#39; exploratory_moves basic_pattern&#39;, </span>
+<span class="sd">     &#39; threshold_delta 0.0001&#39;, &#39; initial_delta 0.5&#39;, &#39; max_iterations 100&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; # modify options of pattern search method</span>
+<span class="sd">    &gt;&gt;&gt; oc_method = DakotaMethod(method=&#39;ps&#39;, max_iterations=200, contraction_factor=0.8)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_method.get_config()</span>
+<span class="sd">    [&#39;coliny_pattern_search&#39;, &#39; contraction_factor 0.8&#39;, &#39; max_function_evaluations 500&#39;, </span>
+<span class="sd">     &#39; solution_accuracy 0.0001&#39;, &#39; exploratory_moves basic_pattern&#39;, </span>
+<span class="sd">     &#39; threshold_delta 0.0001&#39;, &#39; initial_delta 0.5&#39;, &#39; max_iterations 200&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; # conmin_frcg method</span>
+<span class="sd">    &gt;&gt;&gt; oc_method = DakotaMethod(method=&#39;cg&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_method.get_config()</span>
+<span class="sd">    [&#39;conmin_frcg&#39;, &#39; convergence_tolerance 0.0001&#39;, &#39; max_iterations 20&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; # modify options</span>
+<span class="sd">    &gt;&gt;&gt; oc_method = DakotaMethod(method=&#39;cg&#39;, max_iterations=100)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_method.get_config()</span>
+<span class="sd">    [&#39;conmin_frcg&#39;, &#39; convergence_tolerance 0.0001&#39;, &#39; max_iterations 100&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="n">iternum</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_method</span> <span class="o">=</span> <span class="n">method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iternum</span> <span class="o">=</span> <span class="n">iternum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tol</span> <span class="o">=</span> <span class="n">tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kws</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="n">ps_k</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;solution_accuracy&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_delta&#39;</span><span class="p">,</span> <span class="s1">&#39;threshold_delta&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;exploratory_moves&#39;</span><span class="p">,</span> <span class="s1">&#39;contraction_factor&#39;</span><span class="p">,</span> <span class="s1">&#39;max_iterations&#39;</span><span class="p">,</span> 
+                <span class="s1">&#39;max_function_evaluations&#39;</span><span class="p">]</span>
+        <span class="n">ps_v</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1e-4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="s1">&#39;basic_pattern&#39;</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">500</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ps_d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">ps_k</span><span class="p">,</span> <span class="n">ps_v</span><span class="p">))</span>
+
+        <span class="n">cg_k</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;max_iterations&#39;</span><span class="p">,</span> <span class="s1">&#39;convergence_tolerance&#39;</span><span class="p">]</span>
+        <span class="n">cg_v</span> <span class="o">=</span> <span class="p">[</span><span class="n">iternum</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cg_d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">cg_k</span><span class="p">,</span> <span class="n">cg_v</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cg_d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kws</span><span class="p">)</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kws</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">cg_k</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ps&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ps_d</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kws</span><span class="p">)</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kws</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ps_k</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="DakotaMethod.get_default_method"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaMethod.get_default_method">[docs]</a>    <span class="k">def</span> <span class="nf">get_default_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get default configuration of some method</span>
+
+<span class="sd">        :param method: method name, &#39;cg&#39; or &#39;ps&#39;</span>
+<span class="sd">        :return: dict of configuration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cg_d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{k:&lt;10s}</span><span class="s2">:</span><span class="si">{v:&lt;10s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ps&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ps_d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{k:&lt;10s}</span><span class="s2">:</span><span class="si">{v:&lt;10s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DakotaMethod.method"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaMethod.method">[docs]</a>    <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; return method configuration</span>
+<span class="sd">        </span>
+<span class="sd">        :param method: method stirng name, &#39;cg&#39; or &#39;ps&#39;</span>
+<span class="sd">        :return: list of method configuration</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mdict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">mdict</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;cg&#39;</span><span class="p">:</span>
+            <span class="n">mdict</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;conmin_frcg&#39;</span>
+            <span class="n">mdict</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cg_d</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;ps&#39;</span><span class="p">:</span>
+            <span class="n">mdict</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;coliny_pattern_search&#39;</span>
+            <span class="n">mdict</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ps_d</span>
+        
+        <span class="n">retval</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">retval</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mdict</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]))</span>
+        <span class="n">retval</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39; </span><span class="si">{0}</span><span class="s1"> </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">mdict</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+
+        <span class="k">return</span> <span class="n">retval</span></div>
+
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Configurations: </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{0:&lt;10s}</span><span class="s2"> ==&gt; </span><span class="si">{1:&lt;10s}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="DakotaMethod.get_config"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaMethod.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get method configuration for dakota input block</span>
+
+<span class="sd">        :param rtype: &#39;list&#39; or &#39;string&#39;</span>
+<span class="sd">        :return: dakota method input</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oc_method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_method</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">oc_method</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> = </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">oc_method</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># list</span>
+            <span class="k">return</span> <span class="n">oc_method</span></div></div>
+
+
+<div class="viewcode-block" id="DakotaEnviron"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaEnviron">[docs]</a><span class="k">class</span> <span class="nc">DakotaEnviron</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; create datako environment for ``environment`` block</span>
+
+<span class="sd">    :param tabfile: tabular file name, by default not save tabular data</span>
+<span class="sd">    :param kws: other keyword parameters</span>
+
+<span class="sd">    :Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; # default</span>
+<span class="sd">    &gt;&gt;&gt; oc_environ = DakotaEnviron()</span>
+<span class="sd">    &gt;&gt;&gt; print oc_environ.get_config()</span>
+<span class="sd">    []</span>
+<span class="sd">    &gt;&gt;&gt; # define name of tabular file</span>
+<span class="sd">    &gt;&gt;&gt; oc_environ = DakotaEnviron(tabfile=&#39;tmp.dat&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; print oc_environ.get_config()</span>
+<span class="sd">    [&#39;tabular_data&#39;, &quot; tabular_data_file &#39;tmp.dat&#39;&quot;]</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tabfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kws</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tabfile</span> <span class="o">=</span> <span class="n">tabfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span> <span class="o">=</span> <span class="n">kws</span>
+    
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;Configurations: </span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">s</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{0:&lt;10s}</span><span class="s2"> ==&gt; </span><span class="si">{1:&lt;10s}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="DakotaEnviron.get_config"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.DakotaEnviron.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; get responses configuration for dakota input block</span>
+
+<span class="sd">        :param rtype: &#39;list&#39; or &#39;string&#39;</span>
+<span class="sd">        :return: dakota responses input</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">oc_environ</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tabfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">oc_environ</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;tabular_data&#39;</span><span class="p">)</span>
+            <span class="n">oc_environ</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot; tabular_data_file &#39;</span><span class="si">{0}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tabfile</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kws</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">oc_environ</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> = </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s1">&#39;string&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">oc_environ</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># list</span>
+            <span class="k">return</span> <span class="n">oc_environ</span></div></div>
+
+
+<div class="viewcode-block" id="generate_latfile"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.generate_latfile">[docs]</a><span class="k">def</span> <span class="nf">generate_latfile</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">latfile</span><span class="o">=</span><span class="s1">&#39;out.lat&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generate lattice file for the usage of FLAME code</span>
+
+<span class="sd">    :param machine: flame machine object</span>
+<span class="sd">    :param latfile: file name for generated lattice file, &#39;out.lat&#39; by default</span>
+<span class="sd">    :return: None if failed to generate lattice file, or the out file name</span>
+
+<span class="sd">    :Example:</span>
+
+<span class="sd">    &gt;&gt;&gt; from flame import Machine</span>
+<span class="sd">    &gt;&gt;&gt; latfile = &#39;test.lat&#39;</span>
+<span class="sd">    &gt;&gt;&gt; m = Machine(open(latfile))</span>
+<span class="sd">    &gt;&gt;&gt; outfile1 = generate_latfile(m, &#39;out1.lat&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; m.reconfigure(80, {&#39;theta_x&#39;: 0.1})</span>
+<span class="sd">    &gt;&gt;&gt; outfile2 = generate_latfile(m, &#39;out2.lat&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; </span>
+
+<span class="sd">    .. warning:: To get element configuration only by ``m.conf(i)`` method,</span>
+<span class="sd">        where ``m`` is ``flame.Machine`` object, ``i`` is element index,</span>
+<span class="sd">        when some re-configuring operation is done, ``m.conf(i)`` will be update,</span>
+<span class="sd">        but ``m.conf()[&quot;elements&quot;]`` remains with the initial value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">machine</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mconf</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">conf</span><span class="p">()</span>
+        <span class="n">mks</span> <span class="o">=</span> <span class="n">mconf</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to load FLAME machine object.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mconf_ks</span> <span class="o">=</span> <span class="n">mconf</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="p">[</span><span class="n">mconf_ks</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;elements&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mconf_ks</span><span class="p">]</span>
+
+        <span class="c1">#</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">mconf_ks</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">mconf</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{k}</span><span class="s1"> = </span><span class="si">{v}</span><span class="s1">;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="n">mconfe</span> <span class="o">=</span> <span class="n">mconf</span><span class="p">[</span><span class="s1">&#39;elements&#39;</span><span class="p">]</span>
+
+        <span class="c1"># element configuration</span>
+        <span class="n">elem_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mconfe</span><span class="p">)</span>
+        <span class="n">elem_name_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">elem_num</span><span class="p">):</span>
+            <span class="n">elem_i</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">ename</span><span class="p">,</span> <span class="n">etype</span> <span class="o">=</span> <span class="n">elem_i</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">elem_i</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ename</span> <span class="ow">in</span> <span class="n">elem_name_list</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">elem_name_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ename</span><span class="p">)</span>
+            <span class="n">ki</span> <span class="o">=</span> <span class="n">elem_i</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="n">elem_k</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">ki</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">mks</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">etype</span> <span class="o">==</span> <span class="s1">&#39;stripper&#39;</span><span class="p">:</span>
+                <span class="n">elem_k</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;IonChargeStates&#39;</span><span class="p">)</span>
+                <span class="n">elem_k</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s1">&#39;NCharge&#39;</span><span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">elem_i</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">elem_k</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;type&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">):</span>
+                        <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                        <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                    <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{k}</span><span class="s1"> = </span><span class="si">{v}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span><span class="p">))</span>
+            <span class="n">pline</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{n}</span><span class="s1">: </span><span class="si">{t}</span><span class="s1">, </span><span class="si">{p}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">ename</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="n">etype</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">pline</span><span class="p">)</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;;&#39;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="n">dline</span> <span class="o">=</span> <span class="s1">&#39;(&#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(([</span><span class="n">e</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">mconfe</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+
+        <span class="n">blname</span> <span class="o">=</span> <span class="n">mconf</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">: LINE = </span><span class="si">{1}</span><span class="s1">;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">blname</span><span class="p">,</span> <span class="n">dline</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;USE: </span><span class="si">{0}</span><span class="s1">;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">blname</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to generate lattice file.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">latfile</span> <span class="o">!=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+            <span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">latfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+            <span class="n">fout</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+            <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to write to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">latfile</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">latfile</span></div>
+
+
+<div class="viewcode-block" id="get_opt_results"><a class="viewcode-back" href="../../src/apidocs/genopt.html#genopt.dakutils.get_opt_results">[docs]</a><span class="k">def</span> <span class="nf">get_opt_results</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;dakota.out&#39;</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;dict&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; extract optimized results from dakota output</span>
+
+<span class="sd">    :param outfile: file name of dakota output file, </span>
+<span class="sd">        &#39;dakota.out&#39; by default</span>
+<span class="sd">    :param rtype: type of returned results, &#39;dict&#39; or &#39;list&#39;, </span>
+<span class="sd">        &#39;dict&#39; by default</span>
+<span class="sd">    :return: by default return a dict of optimized results with each item</span>
+<span class="sd">        of the format like &quot;x1&quot;:0.1, etc., or if rtype=&#39;list&#39;, return a </span>
+<span class="sd">        list of values, when the keys are ascend sorted.</span>
+
+<span class="sd">    :Example:</span>
+<span class="sd">    </span>
+<span class="sd">    &gt;&gt;&gt; opt_vars = get_opt_results(outfile=&#39;flame_oc.out&#39;, rtype=&#39;dict&#39;):</span>
+<span class="sd">    &gt;&gt;&gt; print(opt_vars)</span>
+<span class="sd">    {&#39;x2&#39;: 0.0020782814353, &#39;x1&#39;: -0.0017913264033}</span>
+<span class="sd">    &gt;&gt;&gt; opt_vars = get_opt_results(outfile=&#39;flame_oc.out&#39;, rtype=&#39;list&#39;):</span>
+<span class="sd">    &gt;&gt;&gt; print(opt_vars)</span>
+<span class="sd">    [-0.0017913264033, 0.0020782814353]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">append_flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">varlines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&lt; &gt;</span><span class="se">\n\t</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">append_flag</span><span class="p">:</span>
+                <span class="n">varlines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Best parameters&#39;</span><span class="p">):</span>
+                <span class="n">append_flag</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;Best objective&#39;</span><span class="p">):</span>
+                <span class="n">append_flag</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">retdict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">varlines</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">rtype</span> <span class="o">==</span> <span class="s1">&#39;dict&#39;</span><span class="p">:</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="n">retdict</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1">#</span>
+            <span class="n">sorted_tuple</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">retdict</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span>
+                <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{0:0&gt;20}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+            <span class="n">retval</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">sorted_tuple</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">retval</span>
+
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot open </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">outfile</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="random_string"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.random_string">[docs]</a><span class="k">def</span> <span class="nf">random_string</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; generate random string with given length</span>
+
+<span class="sd">    :param length: string length, 8 by default</span>
+<span class="sd">    :return: random strings with defined length</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">letters</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">digits</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="test_one_element"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_one_element">[docs]</a><span class="k">def</span> <span class="nf">test_one_element</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; test if all the elements are the same</span>
+
+<span class="sd">    :param x: list, tuple, or numpy array</span>
+<span class="sd">    :return: True if all are the same, else False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">retval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">alltrue</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="o">*</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">retval</span></div>
+
+
+<div class="viewcode-block" id="test_dakotainput"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_dakotainput">[docs]</a><span class="k">def</span> <span class="nf">test_dakotainput</span><span class="p">():</span>
+    <span class="n">entry_interface</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">entry_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;fork&#39;</span><span class="p">)</span>
+    <span class="n">entry_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;analysis_driver = &quot;</span><span class="si">{driver}</span><span class="s1"> </span><span class="si">{argv}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">,</span>
+        <span class="n">argv</span><span class="o">=</span><span class="s1">&#39;/home/tong1/work/FRIB/projects/flame_github/optdrivers/oc/test_392.lat&#39;</span><span class="p">))</span>
+    <span class="n">entry_interface</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;deactivate = active_set_vector&#39;</span><span class="p">)</span>
+
+    <span class="n">entry_method</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">entry_method</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;conmin_frcg&#39;</span><span class="p">)</span>
+    <span class="n">entry_method</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  max_iterations=500&#39;</span><span class="p">)</span>
+    <span class="n">entry_method</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  convergence_tolerance=1e-7&#39;</span><span class="p">)</span>
+
+    <span class="n">entry_variables</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;continuous_design = 2&#39;</span><span class="p">)</span>
+    <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  initial_point 1e-4 1e-4&#39;</span><span class="p">)</span>
+    <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  lower_bounds -0.01 -0.01&#39;</span><span class="p">)</span>
+    <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  upper_bounds  0.01  0.01&#39;</span><span class="p">)</span>
+    <span class="n">entry_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  descriptors   &quot;x1&quot; &quot;x2&quot;&#39;</span><span class="p">)</span>
+
+    <span class="n">entry_responses</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;num_objective_functions=1&#39;</span><span class="p">)</span>
+    <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;numerical_gradients&#39;</span><span class="p">)</span>
+    <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  method_source dakota&#39;</span><span class="p">)</span>
+    <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  interval_type forward&#39;</span><span class="p">)</span>
+    <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;  fd_gradient_step_size 1.0e-6&#39;</span><span class="p">)</span>
+    <span class="n">entry_responses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;no_hessians&#39;</span><span class="p">)</span>
+
+    <span class="n">dak_inp</span> <span class="o">=</span> <span class="n">DakotaInput</span><span class="p">(</span><span class="n">interface</span><span class="o">=</span><span class="n">entry_interface</span><span class="p">,</span>
+                          <span class="n">method</span><span class="o">=</span><span class="n">entry_method</span><span class="p">,</span>
+                          <span class="n">variables</span><span class="o">=</span><span class="n">entry_variables</span><span class="p">,</span>
+                          <span class="n">responses</span><span class="o">=</span><span class="n">entry_responses</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">dak_inp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;./test/test_oc.in&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="test_get_opt_results"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_get_opt_results">[docs]</a><span class="k">def</span> <span class="nf">test_get_opt_results</span><span class="p">():</span>
+    <span class="n">opt_vars</span> <span class="o">=</span> <span class="n">get_opt_results</span><span class="p">(</span><span class="s1">&#39;test/flame_oc.out&#39;</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;dict&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">opt_vars</span>
+
+    <span class="n">opt_vars</span> <span class="o">=</span> <span class="n">get_opt_results</span><span class="p">(</span><span class="s1">&#39;test/flame_oc.out&#39;</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">opt_vars</span></div>
+
+<div class="viewcode-block" id="test_dakotaparam"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_dakotaparam">[docs]</a><span class="k">def</span> <span class="nf">test_dakotaparam</span><span class="p">():</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">DakotaParam</span><span class="p">(</span><span class="s1">&#39;x1&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">DakotaParam</span><span class="p">(</span><span class="s1">&#39;x2&#39;</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">p1</span>
+    <span class="nb">print</span> <span class="n">p2</span>
+    <span class="n">plist</span> <span class="o">=</span> <span class="p">[</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">]</span>
+    <span class="nb">print</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span>
+    <span class="nb">print</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">initial</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span>
+    <span class="nb">print</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span>
+    <span class="nb">print</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="si">{0:&gt;14e}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">plist</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="test_dakotainterface"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_dakotainterface">[docs]</a><span class="k">def</span> <span class="nf">test_dakotainterface</span><span class="p">():</span>
+    <span class="n">if1</span> <span class="o">=</span> <span class="n">DakotaInterface</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">if1</span>
+
+    <span class="n">if2</span> <span class="o">=</span> <span class="n">DakotaInterface</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fork&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">if2</span>
+
+    <span class="n">if3</span> <span class="o">=</span> <span class="n">DakotaInterface</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fork&#39;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">if3</span>
+
+    <span class="n">if4</span> <span class="o">=</span> <span class="n">DakotaInterface</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fork&#39;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">,</span> <span class="n">deactivate</span><span class="o">=</span><span class="s1">&#39;active_set_vector&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">if4</span>
+
+
+    <span class="n">bpms</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span> <span class="c1"># just for demonstration</span>
+    <span class="n">hcors</span><span class="p">,</span> <span class="n">vcors</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">]</span>
+    <span class="n">latfile</span> <span class="o">=</span> <span class="s1">&#39;test.lat&#39;</span>
+    <span class="n">oc_interface</span> <span class="o">=</span> <span class="n">DakotaInterface</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fork&#39;</span><span class="p">,</span> <span class="n">latfile</span><span class="o">=</span><span class="n">latfile</span><span class="p">,</span>
+                                   <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">,</span>
+                                   <span class="n">bpms</span><span class="o">=</span><span class="n">bpms</span><span class="p">,</span> <span class="n">hcors</span><span class="o">=</span><span class="n">hcors</span><span class="p">,</span> <span class="n">vcors</span><span class="o">=</span><span class="n">vcors</span><span class="p">,</span>
+                                   <span class="n">deactivate</span><span class="o">=</span><span class="s1">&#39;active_set_vector&#39;</span><span class="p">)</span>
+    <span class="n">oc_interface</span><span class="o">.</span><span class="n">set_extra</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="s1">&#39;k2&#39;</span><span class="p">)</span>
+    <span class="n">oc_interface</span><span class="o">.</span><span class="n">set_extra</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="s1">&#39;kk1&#39;</span><span class="p">,</span> <span class="n">p3</span><span class="o">=</span><span class="s1">&#39;kk3&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_interface</span>
+    <span class="nb">print</span> <span class="n">oc_interface</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">bpms</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1242</span><span class="p">)</span> <span class="c1"># just for demonstration</span>
+    <span class="n">hcors</span><span class="p">,</span> <span class="n">vcors</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1242</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1242</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">latfile</span> <span class="o">=</span> <span class="s1">&#39;test.lat&#39;</span>
+    <span class="n">oc_interface</span> <span class="o">=</span> <span class="n">DakotaInterface</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;fork&#39;</span><span class="p">,</span> <span class="n">latfile</span><span class="o">=</span><span class="n">latfile</span><span class="p">,</span>
+                                   <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;flamedriver_oc&#39;</span><span class="p">,</span>
+                                   <span class="n">bpms</span><span class="o">=</span><span class="n">bpms</span><span class="p">,</span> <span class="n">hcors</span><span class="o">=</span><span class="n">hcors</span><span class="p">,</span> <span class="n">vcors</span><span class="o">=</span><span class="n">vcors</span><span class="p">,</span>
+                                   <span class="n">deactivate</span><span class="o">=</span><span class="s1">&#39;active_set_vector&#39;</span><span class="p">)</span>
+    <span class="n">oc_interface</span><span class="o">.</span><span class="n">set_extra</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="n">p2</span><span class="o">=</span><span class="s1">&#39;k2&#39;</span><span class="p">)</span>
+    <span class="n">oc_interface</span><span class="o">.</span><span class="n">set_extra</span><span class="p">(</span><span class="n">p1</span><span class="o">=</span><span class="s1">&#39;kk1&#39;</span><span class="p">,</span> <span class="n">p3</span><span class="o">=</span><span class="s1">&#39;kk3&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_interface</span>
+    <span class="nb">print</span> <span class="n">oc_interface</span><span class="o">.</span><span class="n">get_config</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="test_dakotamodel"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_dakotamodel">[docs]</a><span class="k">def</span> <span class="nf">test_dakotamodel</span><span class="p">():</span>
+    <span class="n">oc_model</span> <span class="o">=</span> <span class="n">DakotaModel</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">oc_model</span>
+    <span class="nb">print</span> <span class="n">oc_model</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="test_dakotaresponses"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_dakotaresponses">[docs]</a><span class="k">def</span> <span class="nf">test_dakotaresponses</span><span class="p">():</span>
+    <span class="n">oc_responses</span> <span class="o">=</span> <span class="n">DakotaResponses</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">oc_responses</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_responses</span> <span class="o">=</span> <span class="n">DakotaResponses</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="s1">&#39;analytic&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_responses</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_responses</span> <span class="o">=</span> <span class="n">DakotaResponses</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="s1">&#39;numerical&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_responses</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_responses</span> <span class="o">=</span> <span class="n">DakotaResponses</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="s1">&#39;numerical&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">2.0e-7</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_responses</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_responses</span> <span class="o">=</span> <span class="n">DakotaResponses</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="s1">&#39;numerical&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">2.0e-7</span><span class="p">,</span> <span class="n">k1</span><span class="o">=</span><span class="s1">&#39;v1&#39;</span><span class="p">,</span> <span class="n">k2</span><span class="o">=</span><span class="s1">&#39;v2&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_responses</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">oc_responses</span></div>
+
+<div class="viewcode-block" id="test_dakotamethod"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_dakotamethod">[docs]</a><span class="k">def</span> <span class="nf">test_dakotamethod</span><span class="p">():</span>
+    <span class="n">oc_method</span> <span class="o">=</span> <span class="n">DakotaMethod</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">oc_method</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_method</span> <span class="o">=</span> <span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;ps&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_method</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_method</span> <span class="o">=</span> <span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;ps&#39;</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">contraction_factor</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_method</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_method</span> <span class="o">=</span> <span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_method</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_method</span> <span class="o">=</span> <span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;cg&#39;</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_method</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="test_dakotaenviron"><a class="viewcode-back" href="../../src/apidocs/dakutils.html#genopt.dakutils.test_dakotaenviron">[docs]</a><span class="k">def</span> <span class="nf">test_dakotaenviron</span><span class="p">():</span>
+    <span class="n">oc_environ</span> <span class="o">=</span> <span class="n">DakotaEnviron</span><span class="p">()</span>
+    <span class="nb">print</span> <span class="n">oc_environ</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+
+    <span class="n">oc_environ</span> <span class="o">=</span> <span class="n">DakotaEnviron</span><span class="p">(</span><span class="n">tabfile</span><span class="o">=</span><span class="s1">&#39;tmp.dat&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">oc_environ</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1">#test_dakotainput()</span>
+    <span class="c1">#test_get_opt_results()</span>
+    <span class="c1">#test_dakotaparam()</span>
+    <span class="n">test_dakotainterface</span><span class="p">()</span>
+    <span class="c1">#test_dakotamodel()</span>
+    <span class="c1">#test_dakotaresponses()</span>
+    <span class="c1">#test_dakotamethod()</span>
+    <span class="c1">#test_dakotaenviron()</span>
+    
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Jul 31, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

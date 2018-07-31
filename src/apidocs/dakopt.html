@@ -1,0 +1,864 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>genopt.dakopt module &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/frib-favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="genopt.dakutils module" href="dakutils.html" />
+    <link rel="prev" title="genopt package" href="genopt.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demos.html">Demonstrations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">genopt</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../apidoc.html">API</a> &raquo;</li>
+        
+          <li><a href="genopt.html">genopt package</a> &raquo;</li>
+        
+      <li>genopt.dakopt module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-genopt.dakopt">
+<span id="genopt-dakopt-module"></span><h1>genopt.dakopt module<a class="headerlink" href="#module-genopt.dakopt" title="Permalink to this headline">¶</a></h1>
+<p>General optimization module by utilizing DAKOTA</p>
+<ul class="simple">
+<li>orbit correction: <code class="docutils literal"><span class="pre">DakotaOC</span></code></li>
+</ul>
+<p>Tong Zhang &lt;<a class="reference external" href="mailto:zhangt&#37;&#52;&#48;frib&#46;msu&#46;edu">zhangt<span>&#64;</span>frib<span>&#46;</span>msu<span>&#46;</span>edu</a>&gt;</p>
+<p>2016-10-23 14:26:13 PM EDT</p>
+<dl class="class">
+<dt id="genopt.dakopt.DakotaBase">
+<em class="property">class </em><code class="descname">DakotaBase</code><span class="sig-paren">(</span><em>**kws</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.7)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Base class for general optimization, initialized parameters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body"><ul class="first last simple">
+<li><strong>workdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Root dir for dakota input/output files, the defualt one should be
+created in /tmp, or define some dir path.</li>
+<li><strong>dakexec</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Full path of dakota executable, the default one should be <em>dakota</em>,
+or define the full path.</li>
+<li><strong>dakhead</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Prefixed name for input/output files of <em>dakota</em>, the default one is
+<em>dakota</em>.</li>
+<li><strong>keep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – If keep the working directory (i.e. defined by <em>workdir</em>), default is
+False.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaBase.dakexec">
+<code class="descname">dakexec</code><a class="headerlink" href="#genopt.dakopt.DakotaBase.dakexec" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaBase.dakhead">
+<code class="descname">dakhead</code><a class="headerlink" href="#genopt.dakopt.DakotaBase.dakhead" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaBase.keep">
+<code class="descname">keep</code><a class="headerlink" href="#genopt.dakopt.DakotaBase.keep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaBase.workdir">
+<code class="descname">workdir</code><a class="headerlink" href="#genopt.dakopt.DakotaBase.workdir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="genopt.dakopt.DakotaOC">
+<em class="property">class </em><code class="descname">DakotaOC</code><span class="sig-paren">(</span><em>lat_file=None</em>, <em>elem_bpm=None</em>, <em>elem_cor=None</em>, <em>elem_hcor=None</em>, <em>elem_vcor=None</em>, <em>ref_x0=None</em>, <em>ref_y0=None</em>, <em>ref_flag=None</em>, <em>model=None</em>, <em>optdriver=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#genopt.dakopt.DakotaBase" title="genopt.dakopt.DakotaBase"><code class="xref py py-class docutils literal"><span class="pre">genopt.dakopt.DakotaBase</span></code></a></p>
+<p>Dakota optimization class with orbit correction driver.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>lat_file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Lattice file name.</li>
+<li><strong>elem_bpm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>)</em>) – List of element indice of BPMs.</li>
+<li><strong>elem_cor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>)</em>) – List of element indice of correctors, always folders of 2.</li>
+<li><strong>elem_hcor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>)</em>) – List of element indice of horizontal correctors.</li>
+<li><strong>elem_vcor</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>)</em>) – List of element indice of vertical correctors.</li>
+<li><strong>ref_x0</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>)</em>) – Reference orbit in x, list of BPM readings.</li>
+<li><strong>ref_y0</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>)</em>) – Reference orbit in y, list of BPM readings.</li>
+<li><strong>ref_flag</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – <p>String flag for objective functions:</p>
+<ul>
+<li><code class="docutils literal"><span class="pre">x</span></code>: <span class="math">\(\sum \Delta x^2\)</span>, <span class="math">\(\Delta x = x-x_0\)</span>;</li>
+<li><code class="docutils literal"><span class="pre">y</span></code>: <span class="math">\(\sum \Delta y^2\)</span>, <span class="math">\(\Delta y = y-y_0\)</span>;</li>
+<li><code class="docutils literal"><span class="pre">xy</span></code>: <span class="math">\(\sum \Delta x^2 + \sum \Delta y^2\)</span>.</li>
+</ul>
+</li>
+<li><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Simulation model, ‘flame’ or ‘impact’.</li>
+<li><strong>optdriver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Analysis driver for optimization, ‘flamedriver_oc’ by default.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><ul class="first last simple">
+<li><strong>workdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Root dir for dakota input/output files, the defualt one should be
+created in /tmp, or define some dir path.</li>
+<li><strong>dakexec</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Full path of dakota executable, the default one should be <em>dakota</em>,
+or define the full path.</li>
+<li><strong>dakhead</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Prefixed name for input/output files of <em>dakota</em>, the default one is
+<em>dakota</em>.</li>
+<li><strong>keep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – If keep the working directory (i.e. defined by <em>workdir</em>), default is
+False.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><code class="docutils literal"><span class="pre">elem_bpm</span></code> should be treated as index of elemnt with type name of ‘BPM’,
+however, for the simulation convenience, any element is acceptable,
+see <a class="reference internal" href="#genopt.dakopt.DakotaOC.set_bpms" title="genopt.dakopt.DakotaOC.set_bpms"><code class="xref py py-func docutils literal"><span class="pre">set_bpms()</span></code></a>.</p>
+</div>
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.bpms">
+<code class="descname">bpms</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.bpms" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.create_machine">
+<code class="descname">create_machine</code><span class="sig-paren">(</span><em>lat_file</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.create_machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.create_machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>create machine instance with model configuration</p>
+<ul class="simple">
+<li>setup _machine</li>
+<li>setup _elem_bpm, _elem_cor or (_elem_hcor and _elem_vcor)</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.gen_dakota_input">
+<code class="descname">gen_dakota_input</code><span class="sig-paren">(</span><em>infile=None</em>, <em>debug=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.gen_dakota_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.gen_dakota_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate dakota input file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>infile</strong> – dakota input filename</li>
+<li><strong>debug</strong> – if True, generate a simple test input file</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_all_bpms">
+<code class="descname">get_all_bpms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_all_bpms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_all_bpms" title="Permalink to this definition">¶</a></dt>
+<dd><p>get list of all valid bpms indices</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a list of bpm indices</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dakoc</span> <span class="o">=</span> <span class="n">DakotaOC</span><span class="p">(</span><span class="s1">&#39;test/test.lat&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">dakoc</span><span class="o">.</span><span class="n">get_all_bpms</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_all_cors">
+<code class="descname">get_all_cors</code><span class="sig-paren">(</span><em>type=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_all_cors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_all_cors" title="Permalink to this definition">¶</a></dt>
+<dd><p>get list of all valid correctors indices</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>type</strong> – define corrector type, ‘h’: horizontal, ‘v’: vertical,
+if not defined, return all correctors</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of corrector indices</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dakoc</span> <span class="o">=</span> <span class="n">DakotaOC</span><span class="p">(</span><span class="s1">&#39;test/test.lat&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">dakoc</span><span class="o">.</span><span class="n">get_all_cors</span><span class="p">())</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_all_elem">
+<code class="descname">get_all_elem</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_all_elem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_all_elem" title="Permalink to this definition">¶</a></dt>
+<dd><p>get all elements from <code class="docutils literal"><span class="pre">Machine</span></code> object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of element indices</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_elem_by_name">
+<code class="descname">get_elem_by_name</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_elem_by_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_elem_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>get list of element(s) by name(s)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> – tuple or list of name(s)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list of element indices</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dakoc</span> <span class="o">=</span> <span class="n">DakotaOC</span><span class="p">(</span><span class="s1">&#39;test/test.lat&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">names</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;LS1_CA01:BPM_D1144&#39;</span><span class="p">,</span> <span class="s1">&#39;LS1_WA01:BPM_D1155&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">idx</span> <span class="o">=</span> <span class="n">dakoc</span><span class="o">.</span><span class="n">get_elem_by_name</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+<span class="go">[18, 31]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_elem_by_type">
+<code class="descname">get_elem_by_type</code><span class="sig-paren">(</span><em>type</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_elem_by_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_elem_by_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>get list of element(s) by type</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>type</strong> – string name of element type</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">list of element indices</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dakoc</span> <span class="o">=</span> <span class="n">DakotaOC</span><span class="p">(</span><span class="s1">&#39;test/test.lat&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span> <span class="o">=</span> <span class="s1">&#39;bpm&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">idx</span> <span class="o">=</span> <span class="n">dakoc</span><span class="o">.</span><span class="n">get_elem_by_type</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_machine">
+<code class="descname">get_machine</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_machine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_machine" title="Permalink to this definition">¶</a></dt>
+<dd><p>get flame machine object for potential usage</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">flame machine object or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_opt_latfile">
+<code class="descname">get_opt_latfile</code><span class="sig-paren">(</span><em>outfile=’out.lat’</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_opt_latfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_opt_latfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>get optimized lattice file for potential next usage,
+<code class="docutils literal"><span class="pre">run()</span></code> or <code class="docutils literal"><span class="pre">simple_run()</span></code> should be evoked first to get the
+optimized results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>outfile</strong> – file name for generated lattice file</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">lattice file name or None if failed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_opt_results">
+<code class="descname">get_opt_results</code><span class="sig-paren">(</span><em>outfile=None</em>, <em>rtype=’dict’</em>, <em>label=’plain’</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_opt_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_opt_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>extract optimized results from dakota output</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>outfile</strong> – file name of dakota output file,
+‘dakota.out’ by default</li>
+<li><strong>rtype</strong> – type of returned results, ‘dict’ or ‘list’,
+‘dict’ by default</li>
+<li><strong>label</strong> – <p>label types for returned variables, only valid when rtype ‘dict’,
+‘plain’ by default:</p>
+<blockquote>
+<div><ul>
+<li><em>’plain’</em>: variable labels with format of <code class="docutils literal"><span class="pre">x1</span></code>, <code class="docutils literal"><span class="pre">x2</span></code>, <code class="docutils literal"><span class="pre">y1</span></code>, <code class="docutils literal"><span class="pre">y2</span></code>, etc.
+e.g. <code class="docutils literal"><span class="pre">{'x1':</span> <span class="pre">v1,</span> <span class="pre">'y1':</span> <span class="pre">v2}</span></code></li>
+<li><em>’fancy’</em>: variable labels with the name defined in lattice file,
+e.g. <code class="docutils literal"><span class="pre">'LS1_CA01:DCH_D1131'</span></code>, dict returned sample:
+<code class="docutils literal"><span class="pre">{'LS1_CA01:DCH_D1131':</span> <span class="pre">{'id':9,</span> <span class="pre">'config':{'theta_x':v1}}}</span></code></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The <code class="docutils literal"><span class="pre">fancy</span></code> option will make re-configuring flame machine in a more
+convenient way, such as:</p>
+<div class="last highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_cors</span> <span class="o">=</span> <span class="n">get_opt_results</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s1">&#39;fancy&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">opt_cors</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">m</span><span class="o">.</span><span class="n">reconfigure</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># here m is an instance of flame.Machine class</span>
+<span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">by default return a dict of optimized results with each item
+of the format like “x1”:0.1 or more fancy format by set label with ‘fancy’, etc.,
+if rtype=’list’, return a list of values, when the keys are ascend sorted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Example:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">opt_vars</span> <span class="o">=</span> <span class="n">get_optresults</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;flame_oc.out&#39;</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;dict&#39;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">opt_vars</span><span class="p">)</span>
+<span class="go">{&#39;x2&#39;: 0.0020782814353, &#39;x1&#39;: -0.0017913264033}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt_vars</span> <span class="o">=</span> <span class="n">get_optresults</span><span class="p">(</span><span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;flame_oc.out&#39;</span><span class="p">,</span> <span class="n">rtype</span><span class="o">=</span><span class="s1">&#39;list&#39;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">opt_vars</span><span class="p">)</span>
+<span class="go">[-0.0017913264033, 0.0020782814353]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.get_orbit">
+<code class="descname">get_orbit</code><span class="sig-paren">(</span><em>idx=None</em>, <em>val=None</em>, <em>outfile=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.get_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.get_orbit" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate the orbit with given configurations</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>idx</strong> – (idx_hcor, idx_vcor), tuple of list of indices of h/v cors</li>
+<li><strong>val</strong> – values for each correctos, h/v</li>
+<li><strong>outfile</strong> – filename to save the data</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">tuple of zpos, env_x, env_y, machine</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.hcors">
+<code class="descname">hcors</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.hcors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.latfile">
+<code class="descname">latfile</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.latfile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.optdriver">
+<code class="descname">optdriver</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.optdriver" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>outfile=None</em>, <em>figsize=(10</em>, <em>8)</em>, <em>dpi=90</em>, <em>fontsize=16</em>, <em>**kws</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show orbit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>outfile</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Output file of dakota.</li>
+<li><strong>figsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.7)"><em>tuple</em></a>) – Figure size, <code class="docutils literal"><span class="pre">(h,</span> <span class="pre">w)</span></code>.</li>
+<li><strong>dpi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Figure dpi.</li>
+<li><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Label font size.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.ref_flag">
+<code class="descname">ref_flag</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.ref_flag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.ref_x0">
+<code class="descname">ref_x0</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.ref_x0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.ref_y0">
+<code class="descname">ref_y0</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.ref_y0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.run">
+<code class="descname">run</code><span class="sig-paren">(</span><em>mpi=False</em>, <em>np=None</em>, <em>echo=True</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>run optimization</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mpi</strong> – if True, run DAKOTA in parallel mode, False by default</li>
+<li><strong>np</strong> – number of processes to use, only valid when <code class="docutils literal"><span class="pre">mpi</span></code> is True</li>
+<li><strong>echo</strong> – suppress output if False, True by default</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_bpms">
+<code class="descname">set_bpms</code><span class="sig-paren">(</span><em>bpm=None</em>, <em>pseudo_all=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_bpms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_bpms" title="Permalink to this definition">¶</a></dt>
+<dd><p>set BPMs, and trying to set reference orbit <code class="docutils literal"><span class="pre">(x,y)</span></code> if <code class="docutils literal"><span class="pre">x</span></code> and <code class="docutils literal"><span class="pre">y</span></code>
+is of one unique value.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bpm</strong> – list of bpm indices, if None, use all BPMs</li>
+<li><strong>pseudo_all</strong> – if set True, will use all elements, ignore <code class="docutils literal"><span class="pre">bpm</span></code> parameter</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_cors">
+<code class="descname">set_cors</code><span class="sig-paren">(</span><em>cor=None</em>, <em>hcor=None</em>, <em>vcor=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_cors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_cors" title="Permalink to this definition">¶</a></dt>
+<dd><p>set correctors, if cor, hcor and vcor are None, use all correctors
+if cor is not None, use cor, ignore hcor and vcor</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>cor</strong> – list of corrector indices, hcor, vcor,…</li>
+<li><strong>hcor</strong> – list of horizontal corrector indices</li>
+<li><strong>vcor</strong> – list of vertical corrector indices</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_environ">
+<code class="descname">set_environ</code><span class="sig-paren">(</span><em>environ=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_environ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_environ" title="Permalink to this definition">¶</a></dt>
+<dd><p>setup environment block, that is setup <code class="docutils literal"><span class="pre">oc_environ</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>environ</strong> – <code class="docutils literal"><span class="pre">DakotaEnviron</span></code> object, automatically setup if not defined</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_interface">
+<code class="descname">set_interface</code><span class="sig-paren">(</span><em>interface=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_interface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>setup interface block, that is setup <code class="docutils literal"><span class="pre">oc_interface</span></code>
+should be ready to invoke after <code class="docutils literal"><span class="pre">set_cors</span></code> and <code class="docutils literal"><span class="pre">set_bpms</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>interface</strong> – <code class="docutils literal"><span class="pre">DakotaInterface</span></code> object, automatically setup if not defined</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_method">
+<code class="descname">set_method</code><span class="sig-paren">(</span><em>method=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_method"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_method" title="Permalink to this definition">¶</a></dt>
+<dd><p>setup method block, that is setup <code class="docutils literal"><span class="pre">oc_method</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>method</strong> – <code class="docutils literal"><span class="pre">DakotaMethod</span></code> object, automatically setup if not defined</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_model">
+<code class="descname">set_model</code><span class="sig-paren">(</span><em>model=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>setup model block, that is setup <code class="docutils literal"><span class="pre">oc_model</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>model</strong> – <code class="docutils literal"><span class="pre">DakotaModel</span></code> object, automatically setup if not defined</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_ref_x0">
+<code class="descname">set_ref_x0</code><span class="sig-paren">(</span><em>ref_arr=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_ref_x0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_ref_x0" title="Permalink to this definition">¶</a></dt>
+<dd><p>set reference orbit in x, if not set, use 0s</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ref_arr</strong> – array of reference orbit values
+size should be the same number as selected BPMs</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_ref_y0">
+<code class="descname">set_ref_y0</code><span class="sig-paren">(</span><em>ref_arr=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_ref_y0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_ref_y0" title="Permalink to this definition">¶</a></dt>
+<dd><p>set reference orbit in y, if not set, use 0s</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ref_arr</strong> – array of reference orbit values
+size should be the same number as selected BPMs</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_responses">
+<code class="descname">set_responses</code><span class="sig-paren">(</span><em>responses=None</em>, <em>**kws</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_responses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_responses" title="Permalink to this definition">¶</a></dt>
+<dd><p>setup responses block, that is setup <code class="docutils literal"><span class="pre">oc_responses</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>responses</strong> – <code class="docutils literal"><span class="pre">DakotaResponses</span></code> object, automatically setup if not defined</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.set_variables">
+<code class="descname">set_variables</code><span class="sig-paren">(</span><em>plist=None</em>, <em>initial=0.0001</em>, <em>lower=-0.01</em>, <em>upper=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.set_variables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.set_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>setup variables block, that is setup <code class="docutils literal"><span class="pre">oc_variables</span></code>
+should be ready to invoke after <code class="docutils literal"><span class="pre">set_cors()</span></code></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>plist</strong> – list of defined parameters (<code class="docutils literal"><span class="pre">DakotaParam</span></code> object),
+automatically setup if not defined</li>
+<li><strong>initial</strong> – initial values for all variables, only valid when plist is None</li>
+<li><strong>lower</strong> – lower bound for all variables, only valid when plist is None</li>
+<li><strong>upper</strong> – upper bound for all variables, only valid when plist is None</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="genopt.dakopt.DakotaOC.simple_run">
+<code class="descname">simple_run</code><span class="sig-paren">(</span><em>method=’cg’</em>, <em>mpi=None</em>, <em>np=None</em>, <em>echo=True</em>, <em>**kws</em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#DakotaOC.simple_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.DakotaOC.simple_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run optimization after <code class="docutils literal"><span class="pre">set_bpms()</span></code> and <code class="docutils literal"><span class="pre">set_cors()</span></code>, by using
+default configuration and make full use of computing resources.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – Optimization method, ‘cg’, ‘ps’, ‘cg’ by default.</li>
+<li><strong>mpi</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – If True, run DAKOTA in parallel mode, False by default.</li>
+<li><strong>np</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Number of processes to use, only valid when <code class="docutils literal"><span class="pre">mpi</span></code> is True.</li>
+<li><strong>echo</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Suppress output if False, True by default.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body"><ul class="first last simple">
+<li><strong>step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Gradient step, 1e-6 by default.</li>
+<li><strong>iternum</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Max iteration number, 20 by default.</li>
+<li><strong>evalnum</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – Max function evaulation number, 1000 by default.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="genopt.dakopt.DakotaOC.vcors">
+<code class="descname">vcors</code><a class="headerlink" href="#genopt.dakopt.DakotaOC.vcors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="genopt.dakopt.test_dakotaoc1">
+<code class="descname">test_dakotaoc1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#test_dakotaoc1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.test_dakotaoc1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="genopt.dakopt.test_dakotaoc2">
+<code class="descname">test_dakotaoc2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/genopt/dakopt.html#test_dakotaoc2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#genopt.dakopt.test_dakotaoc2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="dakutils.html" class="btn btn-neutral float-right" title="genopt.dakutils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="genopt.html" class="btn btn-neutral" title="genopt package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Jul 31, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

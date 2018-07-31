@@ -1,0 +1,313 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Run optimization &mdash; genopt 0.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/frib-favicon.ico"/>
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="After optimization" href="demo6.html" />
+    <link rel="prev" title="Setup optimization engine" href="demo4.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> genopt
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../demos.html">Demonstrations</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo1.html">Getting started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo2.html">Setup BPMs, correctors and reference orbit</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo3.html">Setup variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo4.html">Setup optimization engine</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Run optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo6.html">After optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc.html">API</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">genopt</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../demos.html">Demonstrations</a> &raquo;</li>
+        
+      <li>Run optimization</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="run-optimization">
+<h1>Run optimization<a class="headerlink" href="#run-optimization" title="Permalink to this headline">¶</a></h1>
+<p>If running optimization not by <code class="docutils literal"><span class="pre">simple_run()</span></code> method, another approach
+should be utilized.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># generate input file for optimization</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">gen_dakota_input</span><span class="p">()</span>
+
+<span class="c1"># run optimization</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mpi</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Below is a typical user customized script to find the optimized correctors
+configurations.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">genopt</span>
+
+<span class="sd">&quot;&quot;&quot; orbit correction demo</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">latfile</span> <span class="o">=</span> <span class="s1">&#39;test_392.lat&#39;</span>
+<span class="n">oc_ins</span> <span class="o">=</span> <span class="n">genopt</span><span class="o">.</span><span class="n">DakotaOC</span><span class="p">(</span><span class="n">lat_file</span><span class="o">=</span><span class="n">latfile</span><span class="p">,</span> 
+                         <span class="n">workdir</span><span class="o">=</span><span class="s1">&#39;./oc_tmp4&#39;</span><span class="p">,</span> 
+                         <span class="n">keep</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># set BPMs and correctors</span>
+<span class="n">bpms</span> <span class="o">=</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_elem_by_type</span><span class="p">(</span><span class="s1">&#39;bpm&#39;</span><span class="p">)</span>
+<span class="n">hcors</span> <span class="o">=</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_all_cors</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">40</span><span class="p">]</span>
+<span class="n">vcors</span> <span class="o">=</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_all_cors</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">40</span><span class="p">]</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_bpms</span><span class="p">(</span><span class="n">bpm</span><span class="o">=</span><span class="n">bpms</span><span class="p">)</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_cors</span><span class="p">(</span><span class="n">hcor</span><span class="o">=</span><span class="n">hcors</span><span class="p">,</span> <span class="n">vcor</span><span class="o">=</span><span class="n">vcors</span><span class="p">)</span>
+
+<span class="c1"># set parameters</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_variables</span><span class="p">()</span>
+
+<span class="c1"># set interface</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_interface</span><span class="p">()</span>
+
+<span class="c1"># set responses</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">genopt</span><span class="o">.</span><span class="n">DakotaResponses</span><span class="p">(</span><span class="n">gradient</span><span class="o">=</span><span class="s1">&#39;numerical&#39;</span><span class="p">,</span><span class="n">step</span><span class="o">=</span><span class="mf">2.0e-5</span><span class="p">)</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_responses</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="c1"># set model</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">genopt</span><span class="o">.</span><span class="n">DakotaModel</span><span class="p">()</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_model</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+<span class="c1"># set method</span>
+<span class="n">md</span> <span class="o">=</span> <span class="n">genopt</span><span class="o">.</span><span class="n">DakotaMethod</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;ps&#39;</span><span class="p">,</span> 
+        <span class="n">max_function_evaluations</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_method</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">md</span><span class="p">)</span>
+
+<span class="c1"># set environment</span>
+<span class="n">tabfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s1">&#39;./oc_tmp4/dakota1.dat&#39;</span><span class="p">)</span>
+<span class="n">e</span> <span class="o">=</span> <span class="n">genopt</span><span class="o">.</span><span class="n">dakutils</span><span class="o">.</span><span class="n">DakotaEnviron</span><span class="p">(</span><span class="n">tabfile</span><span class="o">=</span><span class="n">tabfile</span><span class="p">)</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_environ</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+<span class="c1"># set reference orbit</span>
+<span class="n">bpms_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">oc_ins</span><span class="o">.</span><span class="n">bpms</span><span class="p">)</span>
+<span class="n">ref_x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">bpms_size</span><span class="p">)</span><span class="o">*</span><span class="mf">0.0</span>
+<span class="n">ref_y0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">bpms_size</span><span class="p">)</span><span class="o">*</span><span class="mf">0.0</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_ref_x0</span><span class="p">(</span><span class="n">ref_x0</span><span class="p">)</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">set_ref_y0</span><span class="p">(</span><span class="n">ref_y0</span><span class="p">)</span>
+
+<span class="c1"># set objective function</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">ref_flag</span> <span class="o">=</span> <span class="s2">&quot;xy&quot;</span>
+
+<span class="c1"># generate input</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">gen_dakota_input</span><span class="p">()</span>
+
+<span class="c1"># run</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mpi</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">np</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="c1">#print oc_ins.get_opt_results()</span>
+
+<span class="c1"># get output</span>
+<span class="n">oc_ins</span><span class="o">.</span><span class="n">get_orbit</span><span class="p">((</span><span class="n">oc_ins</span><span class="o">.</span><span class="n">hcors</span><span class="p">,</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">vcors</span><span class="p">),</span> <span class="n">oc_ins</span><span class="o">.</span><span class="n">get_opt_results</span><span class="p">(),</span> 
+                  <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;orbit.dat&#39;</span><span class="p">)</span>
+
+<span class="c1"># plot</span>
+<span class="c1">#oc_ins.plot()</span>
+</pre></div>
+</div>
+<p>The following figure shows correct the orbit to different reference orbits.</p>
+<a class="reference internal image-reference" href="../../_images/oc_015.png"><img alt="../../_images/oc_015.png" class="align-center" src="../../_images/oc_015.png" style="width: 500px;" /></a>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="demo6.html" class="btn btn-neutral float-right" title="After optimization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="demo4.html" class="btn btn-neutral" title="Setup optimization engine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Facility for Rare Isotope Beams, Michigan State University.
+      Last updated on Jul 31, 2018.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
